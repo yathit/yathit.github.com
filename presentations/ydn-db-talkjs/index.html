@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Presentation</title>
+
+    <meta charset='utf-8'>
+    <script
+            src='../template/slides.js'></script>
+</head>
+
+
+<body style='display: none'>
+
+<section class='slides layout-regular template-default'>
+
+    <!-- Your slides (<article>s) go here. Delete or comment out the
+         slides below. -->
+
+
+    <article class='biglogo'>
+    </article>
+
+    <article>
+        <h1>
+            YDN-DB
+        </h1>
+        <h3>
+            Beautiful database API for <i>secure</i>, <i>robust</i>, <i>high-performance</i>,
+            <i>maintainable</i>, <i>large-scale</i> javascript web app.
+        </h3>
+
+        <p>
+            Kyaw Tun
+            <br>
+            Feb 4, 2012
+        </p>
+    </article>
+
+
+    <article>
+        <h3>
+            Ideal usage of client side data storing techniques
+        </h3>
+        <br/>
+        <div class="build">
+        <p>Cache-Control, ApplicationCache, WebStorage, IndexedDB</p>
+        <ul class="build">
+            <li>Cache-Control - the best for caching <i class="green">everything</i></li>
+            <li>ApplicationCache - <b>all</b> installed application bundle (<i class="red">no web pages or resources</i>)</li>
+            <li>WebStorage (localStorage) - for setting (<i class="yellow">use only once</i>)</li>
+            <li>IndexedDB - for <i class="green">all</i> application data</li>
+        </ul>
+        <p>All of them respect same origin policy.</p>
+        </div>
+    </article>
+
+
+    <article>
+        <h3>
+            IndexedDB is a document-oriented database
+        </h3>
+
+        <p>http://api.example.com/<span class="blue">library-webapp</span>/<span class="green">people</span>/<span class="red">123</span></p>
+        <pre>{
+  "id": 123
+  "email": 'me@aaronsw.com',
+  "born": 531763200000,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics']
+};</pre>
+     <p>
+         Database name: '<span class="blue">library-webapp</span>'<br>
+         Object store name: '<span class="green">people</span>'    <br>
+         <code>keyPath: 'id'</code></br>
+         Primary key: <span class="red">123</span>
+     </p>
+    </article>
+
+    <article class="smaller">
+        <h3>
+            IndexedDB API
+        </h3>
+
+        <p>Transactional database</p>
+            <pre>var storage = new ydn.db.Storage('library-webapp'); var db = storage.db();
+var tx = db.transaction(['author'], 'readwrite');</pre>
+        <p>Asynchronous API</p>
+                <pre>var objectStore = tx.objectStore('author');
+var req = objectStore.get(123); // add, put, delete
+req.onsuccess = function(e) {
+  console.log(e.target.result);
+}
+req.onerror = function(e) {
+  throw e;
+}
+...
+var cursor_req = objectStore.openCursor(key_range);</pre>
+        <p>Indexing</p>
+            <pre>var date_index = objectStore.index('hobby');
+var req = date_index.get('programming');
+...
+var cursor_req = date_index.openCursor(key_range);</pre>
+
+        <p>Support: Chrome, Firefox, IE10, Blackberry 10</p>
+
+        <p style="display: none">
+            <span><img src="../template/images/browser/individual-browser-logos/128-chrome.png"/> </span>
+            <span><img src="../template/images/browser/individual-browser-logos/128-firefox.png"/> </span>
+            <span class="browser-unsupported"><img
+                    src="../template/images/browser/individual-browser-logos/128-safari.png"/> </span>
+            <span><img src="../template/images/browser/individual-browser-logos/128-ie.png"/> </span>
+            <span><img src="../template/images/browser/individual-browser-logos/Opera_128x128.png"/> </span>
+        </p>
+
+        <p>
+            <a href="http://www.w3.org/TR/IndexedDB/">http://www.w3.org/TR/IndexedDB/</a>
+        </p>
+    </article>
+
+    <article class="smaller">
+
+        <p>One-to-many relationship</p>
+        <div class="build">
+        <pre>people_2 = {
+  "id": 124 // primary key, keyPath: "id"
+  "name" {"first": 'Michael', "last": 'Bolin'},
+  "employment": 'Facebook',
+  "hobby": ['programming', 'gaming', 'blogging']
+};
+company_1 = {
+  "name": 'Facebook', // primary key
+  "slogan": "connects you with the people around you"
+}</pre>
+        <p>Many-to-many relationship</p>
+         <pre>hobby_1 = {
+  "name": 'programming', // primary key
+  "description": 'Computer programming is the process of designing, writing, testing, debugging, and maintaining the source code of computer programs.'
+};</pre>
+        <p>Parent-child relationship</p>
+
+        <pre>article_1 = {
+  "author_id": 124
+  "title": 'Inheritance Patterns in JavaScript',
+  "content": 'The Closure Library makes use of the pseudoclassical inheritance pattern, which is particularly compelling when ...'
+};</pre>
+            <p class="build">keyPath: <code>["author_id", "title"]</code></p>
+        </div>
+    </article>
+    <article class="smaller">
+        <h3>Query</h3>
+        <h4>Database lookup cost</h4>
+        <ul>
+            <li>Retrieve by key or key range: <i>O (log n)</i></li>
+            <li>Table scan: <i>O(n)</i></li>
+        </ul>
+        <p>Try to use key or key range lookup.</p>
+        <h4>Serialization cost</h4>
+        <p>Depending on record object size, this can be costly.</p>
+        <p>Avoid false positive retrieval.</p>
+        <h4>Communication cost</h4>
+        <p>Each database request cause switching javascript to browser native context.</p>
+         <p>User key range request over key request.</p>
+    </article>
+    <article class="smaller">
+        <h3>Query</h3>
+        <pre>people_2 = {
+  "id": 124 // primary key, keyPath: "id"
+  "name" {"first": 'Michael', "last": 'Bolin'},
+  "employment": 'Facebook',
+  "hobby": ['programming', 'gaming', 'blogging']
+};</pre>
+         <div class="build">
+        <p>
+            <code>hobby = 'programming'</code> <br>
+            <code>employment = 'Facebook' </code> <br>
+            <code>ORDER BY name.first</code>
+        </p>
+
+        <pre>index = {
+  name: 'idx_ehf',
+  keyPath: ["employment", "hobby", "name.first"]
+}</pre>
+        <p>Query: <code style="font-size: smaller">db.list('people', 'idx_ehf',
+            KeyRange.starts(['Facebook', 'programming'])</code></p>
+        <p>Index disk storage: <code style="font-size: smaller">n<sub>e</sub> * n<sub>h</sub> * n<sub>f</sub></code></p>
+        <p>Compute time: <code style="font-size: smaller">O(log (n<sup>3k</sup>))</code></p>
+         </div>
+    </article>
+    <article class="smaller">
+        <div class="build">
+
+        <pre>people_1 = {
+  "id": 123
+  "email": 'me@aaronsw.com',
+  "born": 531763200000,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics']
+};</pre>  <p>
+        <code>hobby = 'programming'</code> <br>
+        <code>born &gt; 1980 AND born &lt; 1990 </code> <br>
+        <code>ORDER BY name.first</code>
+    </p>  <pre>index = {
+  name: 'idx_hbf',
+  keyPath: ["hobby", "born", "name.first"]
+}</pre>
+            <p>Query: <code style="font-size: smaller">db.list('people', 'idx_hbf',
+                KeyRange.bound(['programming', 315504000000], ['programming', 631123200000])</code>
+            </p>
+            <pre>index = {
+  name: 'idx_hb',
+  keyPath: ["hobby", "born"]
+}</pre>
+            <p>Query: <code style="font-size: smaller">db.list('people', 'idx_hb',
+                KeyRange.bound(['programming', 315504000000], ['programming', 631123200000])</code>
+            </p>
+             </div>
+    </article>
+
+    <article class="smaller">
+        <div class="build">
+
+        <pre>people_1 = {
+  "id": 123
+  "email": 'me@aaronsw.com',
+  "born": 531763200000,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics']
+};</pre>  <p>
+            <code>hobby = 'programming'</code> <br>
+            <code>born &gt; 1980 AND born &lt; 1990 </code> <br>
+            <code>ORDER BY name.first</code>
+        </p>
+            <pre>index = {
+  name: 'idx_hb',
+  keyPath: ["hobby", "born"]
+}</pre>
+            <p>Query: <code style="font-size: smaller">db.list('people', 'idx_hb',
+                KeyRange.bound(['programming', 315504000000], ['programming', 631123200000])</code>
+            </p>
+            <p>Compute time: <code>O(log(n<sup>2k</sup>) + n log n)</code></p>
+            <p>Memory: <code>R values</code></p>
+        </div>
+    </article>
+
+    <article class="smaller">
+         <p>
+            <code>hobby = 'programming'</code> <br>
+            <code>born &gt; 1980 AND born &lt; 1990 </code> <br>
+            <code>ORDER BY name.first</code>
+        </p>
+            <pre>index = [{name: 'idx_hb',
+  keyPath: ["hobby", "born"],
+}, {name: 'idx_f',
+  keyPath: 'name.first'
+}];</pre>    <div class="build">
+            <p>Filter by hobby and born</p>
+            <pre>key_range = KeyRange.bound(['programming', 315504000000], ['programming', 631123200000];
+db.list(KeyIterator('people', 'idx_hb', key_range)).done(function(result) {
+  filtered_primary_keys = result;
+});</pre>
+        <p>Order by name.first</p>
+        <pre>db.scan(KeyIterator('people', 'idx_f')).done(function(index_key, primary_key) {
+  if (filtered_primary_keys.indexOf(primary_key) >= 0) {
+    db.get(primary_key).done(function(result) {
+       console.log(result);
+    });
+  });
+});</pre>
+        <p>Compute time: <code>O(n * log(n<sup>2k</sup>)</code><br>
+        Memory: <code>R keys</code><br>
+      No false positive retrieval. Offset, limit paging supported.</p>
+        </div>
+    </article>
+</section>
+
+</body>
+</html>
