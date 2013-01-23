@@ -1,4 +1,0 @@
-yathit
-======
-
-static files
