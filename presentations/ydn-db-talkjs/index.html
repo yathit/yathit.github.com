@@ -62,7 +62,7 @@
             IndexedDB is a document-oriented database
         </h3>
 
-        <p>http://api.example.com/<span class="blue">library-webapp</span>/<span class="green">people</span>/<span class="red">123</span></p>
+        <p>http://api.example.com/<span class="blue">library-webapp</span>/<span class="green">author</span>/<span class="red">123</span></p>
         <pre>{
   "id": 123
   "email": 'me@aaronsw.com',
@@ -74,7 +74,7 @@
 };</pre>
      <p>
          Database name: '<span class="blue">library-webapp</span>'<br>
-         Object store name: '<span class="green">people</span>'    <br>
+         Object store name: '<span class="green">author</span>'    <br>
          <code>keyPath: 'id'</code></br>
          Primary key: <span class="red">123</span>
      </p>
@@ -125,7 +125,7 @@ var cursor_req = date_index.openCursor(key_range);</pre>
 
         <p>One-to-many relationship</p>
         <div class="build">
-        <pre>people_2 = {
+        <pre>author_2 = {
   "id": 124 // primary key, keyPath: "id"
   "name" {"first": 'Michael', "last": 'Bolin'},
   "employment": 'Facebook',
@@ -133,7 +133,7 @@ var cursor_req = date_index.openCursor(key_range);</pre>
 };
 company_1 = {
   "name": 'Facebook', // primary key
-  "slogan": "connects you with the people around you"
+  "slogan": "connects you with the author around you"
 }</pre>
         <p>Many-to-many relationship</p>
          <pre>hobby_1 = {
@@ -166,8 +166,100 @@ company_1 = {
          <p>User key range request over key request.</p>
     </article>
     <article class="smaller">
+        <h3>Range Query</h3>
+        <pre>author_2 = {
+  "id": 123
+  "email": 'me@aaronsw.com',
+  "born": 531763200000,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics']
+};</pre>
+        <div class="build">
+
+            <p>
+                <code>born &gt; 1980 AND born &lt; 1990 </code>
+            </p>
+
+        <pre>index = {
+  name: 'idx_b',
+  keyPath: 'born'
+}</pre>
+            <p>Query: <code style="font-size: smaller">db.list('author', 'idx_b',
+                KeyRange.bound(315504000000, 631123200000)</code></p>
+            <p>Index disk storage: <code>n</code></p>
+            <p>Compute time: <code>O(log n)</code></p>
+        </div>
+    </article>
+    <article class="smaller">
+    <h3>Listed index query</h3>
+        <pre>author_2 = {
+  "id": 123
+  "email": 'me@aaronsw.com',
+  "born": 531763200000,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics']
+};</pre>
+    <div class="build">
+
+        <p>
+            <code>hobby = 'programming' </code>
+        </p>
+
+        <pre>index = {
+  name: 'idx_h',
+  keyPath: 'hobby',
+  multiEntry: true
+}</pre>
+        <p>Query: <code style="font-size: smaller">db.list('author', 'idx_h',
+            KeyRange.only('programming')</code></p>
+        <p>Index disk storage: <code>k<sub>h</sub> * n</code></p>
+        <p>Compute time: <code>O(log (k<sub>h</sub> * n))</code></p>
+    </div>
+    </article>
+
+    <article class="smaller">
+        <h3>Parent-child query</h3>
+        <pre>author_2 = {
+  "id": 123,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics']
+};      
+article_1 = {
+  "author_id": 124
+  "title": 'Inheritance Patterns in JavaScript',
+  "content": 'The Closure Library makes use of the pseudoclassical inheritance pattern, which is particularly compelling when ...'
+};</pre>
+        <pre>stores = [{
+    name: 'author',
+    keyPath: 'id'
+}, {
+    name: 'article',
+    keyPath: ['author_id', 'title']
+}];
+</pre>
+        <div class="build">
+
+            <p>
+                Query: <code>SELECT * FROM article where author_id = 123 </code>
+            </p>
+
+
+            <p>Query: <code>db.list('article',
+                KeyRange.starts([123])</code></p>
+            <p>Index disk storage: <code>0</code></p>
+            <p>Compute time: <code>O(log n<sub>article</sub>)</code></p>
+        </div>
+    </article>
+    
+    <article class="smaller">
         <h3>Query</h3>
-        <pre>people_2 = {
+        <pre>author_2 = {
   "id": 124 // primary key, keyPath: "id"
   "name" {"first": 'Michael', "last": 'Bolin'},
   "employment": 'Facebook',
@@ -184,16 +276,16 @@ company_1 = {
   name: 'idx_ehf',
   keyPath: ["employment", "hobby", "name.first"]
 }</pre>
-        <p>Query: <code style="font-size: smaller">db.list('people', 'idx_ehf',
+        <p>Query: <code style="font-size: smaller">db.list('author', 'idx_ehf',
             KeyRange.starts(['Facebook', 'programming'])</code></p>
-        <p>Index disk storage: <code style="font-size: smaller">n<sub>e</sub> * n<sub>h</sub> * n<sub>f</sub></code></p>
-        <p>Compute time: <code style="font-size: smaller">O(log (n<sup>3k</sup>))</code></p>
+        <p>Index disk storage: <code>n<sub>e</sub> * n<sub>h</sub> * n<sub>f</sub></code></p>
+        <p>Compute time: <code>O(log (n<sup>3k<sub>h</sub></sup>))</code></p>
          </div>
     </article>
     <article class="smaller">
         <div class="build">
 
-        <pre>people_1 = {
+        <pre>author_1 = {
   "id": 123
   "email": 'me@aaronsw.com',
   "born": 531763200000,
@@ -209,14 +301,14 @@ company_1 = {
   name: 'idx_hbf',
   keyPath: ["hobby", "born", "name.first"]
 }</pre>
-            <p>Query: <code style="font-size: smaller">db.list('people', 'idx_hbf',
+            <p>Query: <code style="font-size: smaller">db.list('author', 'idx_hbf',
                 KeyRange.bound(['programming', 315504000000], ['programming', 631123200000])</code>
             </p>
             <pre>index = {
   name: 'idx_hb',
   keyPath: ["hobby", "born"]
 }</pre>
-            <p>Query: <code style="font-size: smaller">db.list('people', 'idx_hb',
+            <p>Query: <code style="font-size: smaller">db.list('author', 'idx_hb',
                 KeyRange.bound(['programming', 315504000000], ['programming', 631123200000])</code>
             </p>
              </div>
@@ -225,7 +317,7 @@ company_1 = {
     <article class="smaller">
         <div class="build">
 
-        <pre>people_1 = {
+        <pre>author_1 = {
   "id": 123
   "email": 'me@aaronsw.com',
   "born": 531763200000,
@@ -242,7 +334,7 @@ company_1 = {
   name: 'idx_hb',
   keyPath: ["hobby", "born"]
 }</pre>
-            <p>Query: <code style="font-size: smaller">db.list('people', 'idx_hb',
+            <p>Query: <code style="font-size: smaller">db.list('author', 'idx_hb',
                 KeyRange.bound(['programming', 315504000000], ['programming', 631123200000])</code>
             </p>
             <p>Compute time: <code>O(log(n<sup>2k</sup>) + n log n)</code></p>
@@ -263,11 +355,11 @@ company_1 = {
 }];</pre>    <div class="build">
             <p>Filter by hobby and born</p>
             <pre>key_range = KeyRange.bound(['programming', 315504000000], ['programming', 631123200000];
-db.list(KeyIterator('people', 'idx_hb', key_range)).done(function(result) {
+db.list(KeyIterator('author', 'idx_hb', key_range)).done(function(result) {
   filtered_primary_keys = result;
 });</pre>
         <p>Order by name.first</p>
-        <pre>db.scan(KeyIterator('people', 'idx_f')).done(function(index_key, primary_key) {
+        <pre>db.scan(KeyIterator('author', 'idx_f')).done(function(index_key, primary_key) {
   if (filtered_primary_keys.indexOf(primary_key) >= 0) {
     db.get(primary_key).done(function(result) {
        console.log(result);
