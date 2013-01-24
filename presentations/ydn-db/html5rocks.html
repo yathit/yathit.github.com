@@ -3,7 +3,7 @@
 
 <html xmlns="http://www.w3.org/1999/html">
 <head>
-    <title>HTML5Rock.sg: Using IndexedDB</title>
+    <title>HTML5Rocks@sg: Using IndexedDB</title>
 
     <meta charset='utf-8'>
     <script
@@ -71,7 +71,7 @@
     "first": 'Aaron',
     "last": 'Swartz'},
   "hobby": ['programming', 'blogging', 'politics']
-};</pre>
+}</pre>
      <p>
          Database name: '<span class="blue">library-webapp</span>'<br>
          Object store name: '<span class="green">author</span>'    <br>
@@ -90,18 +90,18 @@
 var tx = db.transaction(['author'], 'readwrite');</pre>
         <p>Asynchronous API</p>
                 <pre>var objectStore = tx.objectStore('author');
-var req = objectStore.get(123); // add, put, delete
-req.onsuccess = function(e) {
+var idb_request = objectStore.get(123); // add, put, delete
+idb_request.onsuccess = function(e) {
   console.log(e.target.result);
 }
-req.onerror = function(e) {
+idb_request.onerror = function(e) {
   throw e;
 }
 ...
 var cursor_req = objectStore.openCursor(key_range);</pre>
         <p>Indexing</p>
             <pre>var date_index = objectStore.index('hobby');
-var req = date_index.get('programming');
+var idb_request = date_index.get('programming');
 ...
 var cursor_req = date_index.openCursor(key_range);</pre>
 
@@ -187,67 +187,40 @@ article_1 = {
         </div>
     </article>
 
-    <article name="Parent-child relationship" class="smaller">
-        <h3>Parent-child relationship</h3>
 
-        <div class="build">
-        <pre>author_2 = {
-  "id": 124 // primary key, keyPath: "id"
-  "name" {"first": 'Michael', "last": 'Bolin'},
-  "employment": 'Facebook',
-  "hobby": ['programming', 'gaming', 'blogging']
-};
-company_1 = {
-  "name": 'Facebook', // primary key
-  "slogan": "connects you with the author around you"
-}</pre>
-
-         <pre>hobby_1 = {
-  "name": 'programming', // primary key
-  "description": 'Computer programming is the process of designing, writing, testing, debugging, and maintaining the source code of computer programs.'
-};</pre>
-
-
-        <pre>article_1 = {
-  "author_id": 124
-  "title": 'Inheritance Patterns in JavaScript',
-  "content": 'The Closure Library makes use of the pseudoclassical inheritance pattern, which is particularly compelling when ...'
-};</pre>
-            <p class="build">keyPath: <code>["author_id", "title"]</code></p>
-        </div>
-    </article>
 
     <article name="Many-to-many relationship" class="smaller">
         <h3>Many-to-many relationship</h3>
 
 
-        <pre>author_1 = {"id": 123, // primary key
-  "name": { "first": 'Aaron', "last": 'Swartz'},
-  "hobby": ['programming', 'blogging', 'politics'] // list of foreign key
-};
-author_2 = {"id": 124 // primary key
-  "name" {"first": 'Michael', "last": 'Bolin'},
-  "hobby": ['programming', 'gaming', 'blogging']
-};
-hobby_1 = {"name": 'programming', // primary key
+        <pre>hobby = [{
+  "name": 'programming', // primary key
   "description": 'Computer programming is the process of designing, writing, testing, debugging, and maintaining the source code of computer programs.'
-};
-hobby_2 = {"name": 'gaming', // primary key
+}, {"name": 'gaming', // primary key
   "description": 'Gaming is the act of playing a game.'
-};</pre>
+}];
+authors = [{
+  "id": 123, // primary key
+  "name": { "first": 'Aaron', "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics'] // list of foreign keys
+}, {"id": 124 // primary key
+  "name" {"first": 'Michael', "last": 'Bolin'},
+  "hobby": ['programming', 'gaming', 'blogging'] // list of foreign keys
+}];</pre>
         <div class="build">
       <pre>stores = [{name: 'author',
   keyPath: 'id',
   indexes: [{
-    keyPath: 'hobby'
+    keyPath: 'hobby',
+    multiEntry: true
 }], {name: 'hobby',
     keyPath: 'name'
 }];
-</pre>     <p>
+</pre>   <p>
             Query from hobby to author<br> <code>SELECT * FROM author WHERE hobby = 'programming' </code>
         </p>
 
-            <pre>db.list('author', 'hobby', KeyRange.only('programming')</pre>
+            <pre>db.list('author', 'hobby', KeyRange.only('programming'))</pre>
 
         </div>
     </article>
@@ -288,16 +261,19 @@ hobby_2 = {"name": 'gaming', // primary key
         <pre>store = {
   name: 'author',
   indexes: [{
-  keyPath: 'born'}]
-}</pre>
+    keyPath: 'born'
+  }]
+}</pre>   <div>
             <p>Query: <code style="font-size: smaller">db.list('author', 'born',
                 KeyRange.bound(315504000000, 631123200000)</code></p>
             <p>Index disk storage: <code>n</code></p>
             <p>Compute time: <code>O(log n)</code></p>
         </div>
+        </div>
     </article>
     <article name="Listed index query" class="smaller">
     <h3>Listed index query</h3>
+
         <pre>author_2 = {
   "id": 123
   "email": 'me@aaronsw.com',
@@ -310,18 +286,24 @@ hobby_2 = {"name": 'gaming', // primary key
     <div class="build">
 
         <p>
-            <code>hobby = 'programming' </code>
+            <code>SELECT * FROM author WHERE hobby = 'programming' </code>
         </p>
 
-        <pre>index = {
-  name: 'idx_h',
-  keyPath: 'hobby',
-  multiEntry: true
+        <pre>store = {
+  name: 'author',
+  keyPath: 'id',
+  indexes: [{
+    keyPath: 'hobby',
+    multiEntry: true
+  }]
 }</pre>
-        <p>Query: <code style="font-size: smaller">db.list('author', 'idx_h',
-            KeyRange.only('programming')</code></p>
-        <p>Index disk storage: <code>k<sub>h</sub> * n</code></p>
-        <p>Compute time: <code>O(log (k<sub>h</sub> * n))</code></p>
+        <div>
+        <p><code style="font-size: smaller">db.list('author', 'hobby',
+            KeyRange.only('programming'))</code></p>
+        <p>Index disk storage: <code>&ntilde;<sub>h</sub> n</code><br>
+        Compute time: <code>O(log (&ntilde;<sub>h</sub> n))</code></p>
+
+        </div>
     </div>
     </article>
 
@@ -335,7 +317,7 @@ hobby_2 = {"name": 'gaming', // primary key
   "hobby": ['programming', 'blogging', 'politics']
 };</pre>
         <p>
-            Query: <code>SELECT * FROM author where hobby = 'programming' ORDER BY name.first </code>
+           <code>SELECT * FROM author WHERE hobby = 'programming' ORDER BY name.first </code>
         </p>
         <div class="build">
         <pre>stores = [{
@@ -351,8 +333,8 @@ hobby_2 = {"name": 'gaming', // primary key
         <pre>key_range = KeyRange.bound(['programming'], ['programming', '\uffff']);
 db.list('article', 'hf', key_range);</pre>
      <div>
-        <p>Index disk storage: <code>&ntilde;<sub>h</sub> * n</code><br>
-        Compute time: <code>O(log (&ntilde;<sub>h</sub> * n))</code></p>
+        <p>Index disk storage: <code>&ntilde;<sub>h</sub> n</code><br>
+        Compute time: <code>O(log (&ntilde;<sub>h</sub> n))</code></p>
      </div>
         </div>
     </article>
@@ -385,8 +367,8 @@ db.list('article', 'hf', key_range);</pre>
         <pre>key_range = KeyRange.starts(['Reddit', 'politics']);
 db.list('article', 'chf', key_range);</pre>
             <div>
-                <p>Index disk storage: <code>&ntilde;<sub>c</sub> * &ntilde;<sub>h</sub> * n</code><br>
-                    Compute time: <code>O(log (&ntilde;<sub>c</sub> * &ntilde;<sub>h</sub> * n))</code></p>
+                <p>Index disk storage: <code>&ntilde;<sub>c</sub> &ntilde;<sub>h</sub> n</code><br>
+                    Compute time: <code>O(log (&ntilde;<sub>c</sub> &ntilde;<sub>h</sub> n))</code></p>
             </div>
         </div>
     </article>
