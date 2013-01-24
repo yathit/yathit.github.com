@@ -620,3 +620,22 @@ article.smaller q::after {
     padding: 0;
     margin: 0;
 }
+
+div.two-col {
+    width: 100%;
+    clear:both;
+
+}
+
+div.two-col > span.left {
+    text-align: center;
+    width:50%;
+    float:left;
+
+}
+
+div.two-col > span.right {
+    text-align: center;
+    width:50%;
+    float:right;
+}

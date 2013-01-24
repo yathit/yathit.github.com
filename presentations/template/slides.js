@@ -10,7 +10,7 @@
   URL: http://code.google.com/p/html5slides/
 */
 
-var PERMANENT_URL_PREFIX = 'http://localhost/presentations/template/';
+var PERMANENT_URL_PREFIX = location.hostname == 'localhost' ? 'http://localhost/yathit/presentations/template/' : 'http://html5slides.googlecode.com/svn/trunk/';
 
 var SLIDE_CLASSES = ['far-past', 'past', 'current', 'next', 'far-next'];
 

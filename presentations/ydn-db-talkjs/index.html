@@ -343,6 +343,52 @@ article_1 = {
     </article>
 
     <article class="smaller">
+        <h3>Multiple fields query</h3>
+        <pre>author_2 = {
+  "id": 124 // primary key, keyPath: "id"
+  "name" {"first": 'Michael', "last": 'Bolin'},
+  "employment": {
+     "current": 'Facebook',
+     "past": ['MIT', 'Google']}
+};</pre>
+        <pre>indexes: [{
+  name: 'e.c',
+  keyPath: 'employment.current'
+}, {
+  name: 'e.p',
+  keyPath: 'employment.past',
+  multiEntry: true
+}];</pre>
+        <pre>db.keys(KeyIterator('author', 'e.c', KeyRange.only('Facebook'))).done(function(result) {
+  fb_primary_keys = result;
+});
+db.keys(KeyIterator('author', 'e.p', KeyRange.only('Google'))).done(function(result) {
+  goog_primary_keys = result;
+});</pre>
+        <p>Memory: <code>R<sub>fb</sub> + R<sub>goog</sub></code> keys</p>
+    </article>
+    <article class="smaller">
+    <h3>Multiple fields query</h3>
+    <p>Sorted merge algorithm</p>
+        <pre>fb_cursor_request = authorStore.openKeyCursor('e.c', KeyRange.only('Facebook'));
+dbgoog_cursor_request = authorStore.openKeyCursor('e.p', KeyRange.only('Google'));</pre>
+
+    <div class="build">
+        <div class="two-col"><span class="left"><code>fb_cursor</code></span><span class="right"><code>goog_cursor</code></span></div>
+        <div class="two-col"><span class="left"><code>3</code></span><span class="right"><code>5</code></span></div>
+        <div class="two-col"><span class="left"><code>fb_cursor.continue(5)</code></span><span class="right"><code></code></span></div>
+        <div class="two-col"><span class="left"><code>5</code></span><span class="right"><code>5</code></span></div>
+        <div class="two-col"><span class="left"><code>fb_cursor.continue()</code></span><span class="right"><code>fb_cursor.continue()</code></span></div>
+        <div class="two-col"><span class="left"><code>9</code></span><span class="right"><code>7</code></span></div>
+        <div class="two-col"><span class="left"><code></code></span><span class="right"><code>fb_cursor.continue(9)</code></span></div>
+        <div class="two-col"><span class="left"><code>9</code></span><span class="right"><code>10</code></span></div>
+        <div class="two-col"><span class="left"><code>fb_cursor.continue(10)</code></span><span class="right"><code></code></span></div>
+        <div class="two-col"><span class="left"><code>10</code></span><span class="right"><code>10</code></span></div>
+    </div>
+
+
+    </article>
+    <article class="smaller">
          <p>
             <code>hobby = 'programming'</code> <br>
             <code>born &gt; 1980 AND born &lt; 1990 </code> <br>
