@@ -3,7 +3,7 @@
 
 <html xmlns="http://www.w3.org/1999/html">
 <head>
-    <title>HTML5Rock.sg: YDN-DB</title>
+    <title>HTML5Rock.sg: Using IndexedDB</title>
 
     <meta charset='utf-8'>
     <script
@@ -13,7 +13,7 @@
 
 <body style='display: none'>
 
-<section class='slides layout-regular template-default'>
+<section class='slides layout-regular template-ydn-db'>
 
     <!-- Your slides (<article>s) go here. Delete or comment out the
          slides below. -->
@@ -22,7 +22,7 @@
     <article class='biglogo'>
     </article>
 
-    <article>
+    <article name="YDN-DB">
         <h1>
             YDN-DB
         </h1>
@@ -39,9 +39,9 @@
     </article>
 
 
-    <article>
+    <article name="Ideal usages">
         <h3>
-            Ideal usage of client side data storing techniques
+            Ideal usages of client side data storing techniques
         </h3>
         <br/>
         <div class="build">
@@ -49,7 +49,7 @@
         <ul class="build">
             <li>Cache-Control - the best for caching <i class="green">everything</i></li>
             <li>ApplicationCache - <b>all</b> installed application bundle (<i class="red">no web pages or resources</i>)</li>
-            <li>WebStorage (localStorage) - for setting (<i class="yellow">use only once</i>)</li>
+            <li>WebStorage (localStorage) - for setting (<i class="yellow">read only once</i>)</li>
             <li>IndexedDB - for <i class="green">all</i> application data</li>
         </ul>
         <p>All of them respect same origin policy.</p>
@@ -57,7 +57,7 @@
     </article>
 
 
-    <article>
+    <article name="IndexedDB is a document-oriented database">
         <h3>
             IndexedDB is a document-oriented database
         </h3>
@@ -80,7 +80,7 @@
      </p>
     </article>
 
-    <article class="smaller">
+    <article name="IndexedDB API" class="smaller">
         <h3>
             IndexedDB API
         </h3>
@@ -121,6 +121,35 @@ var cursor_req = date_index.openCursor(key_range);</pre>
         </p>
     </article>
 
+    <article name="One-to-many relationship">
+
+        <h3>One-to-many relationship</h3>
+
+        <pre>author_2 = {
+  "id": 124 // primary key, keyPath: "id"
+  "name" {"first": 'Michael', "last": 'Bolin'},
+  "employment": {
+    "current": 'Facebook',
+    "past": ['MIT', 'Google']
+  },
+  "hobby": ['programming', 'gaming', 'blogging']
+};
+company_1 = {
+  "name": 'Facebook', // primary key
+  "slogan": "connects you with the author around you"
+}</pre>
+         <pre>stores: [{
+  name: 'author',
+  keyPath: 'id',
+  indexes: [{
+    keyPath: 'employment'
+  }]
+}, {
+  name: 'company',
+  keyPath: 'name'
+}];</pre>
+    </article>
+
     <article class="smaller">
 
         <p>One-to-many relationship</p>
@@ -150,7 +179,7 @@ company_1 = {
             <p class="build">keyPath: <code>["author_id", "title"]</code></p>
         </div>
     </article>
-    <article class="smaller">
+    <article name="Query" class="smaller">
         <h3>Query</h3>
         <h4>Database lookup cost</h4>
         <ul>
@@ -165,7 +194,7 @@ company_1 = {
         <p>Each database request cause switching javascript to browser native context.</p>
          <p>User key range request over key request.</p>
     </article>
-    <article class="smaller">
+    <article name="Range Query" class="smaller">
         <h3>Range Query</h3>
         <pre>author_2 = {
   "id": 123
@@ -221,7 +250,125 @@ company_1 = {
     </div>
     </article>
 
-    <article class="smaller">
+    <article name="Sorting" class="smaller">
+        <h3>Sorting</h3>
+        <pre>author_2 = {
+  "id": 123,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics']
+};</pre>
+        <p>
+            Query: <code>SELECT * FROM author where hobby = 'programming' ORDER BY name.first </code>
+        </p>
+        <div class="build">
+        <pre>stores = [{
+  name: 'author',
+  keyPath: 'id',
+  indexes: [{
+    name: 'hf',
+    keyPath: ['hobby', 'name.first'],
+    multiEntry: true
+}];
+
+</pre>
+        <pre>key_range = KeyRange.bound(['programming'], ['programming', '\uffff']);
+db.list('article', 'hf', key_range);</pre>
+     <div>
+        <p>Index disk storage: <code>&ntilde;<sub>h</sub> * n</code><br>
+        Compute time: <code>O(log (&ntilde;<sub>h</sub> * n))</code></p>
+     </div>
+        </div>
+    </article>
+
+    <article name="Multi filter sorting" class="smaller">
+        <h3>Multi-filter sorting</h3>
+        <pre>author_1 = {
+  "id": 123,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "company": ['Infogami', 'Reddit'],
+  "hobby": ['programming', 'blogging', 'politics']
+};</pre>
+        <p>
+            Query: <code>SELECT * FROM author where company = 'Reddit'
+            AND hobby = 'politics' ORDER BY name.first </code>
+        </p>
+        <div class="build">
+        <pre>stores = [{
+  name: 'author',
+  keyPath: 'id',
+  indexes: [{
+    name: 'chf',
+    keyPath: ['company', 'hobby', 'name.first'],
+    multiEntry: true
+}];
+
+</pre>
+        <pre>key_range = KeyRange.starts(['Reddit', 'politics']);
+db.list('article', 'chf', key_range);</pre>
+            <div>
+                <p>Index disk storage: <code>&ntilde;<sub>c</sub> * &ntilde;<sub>h</sub> * n</code><br>
+                    Compute time: <code>O(log (&ntilde;<sub>c</sub> * &ntilde;<sub>h</sub> * n))</code></p>
+            </div>
+        </div>
+    </article>
+
+    <article name="Sorted merge algorithm" class="smaller">
+        <h3>Sorted merge algorithm</h3>
+        <pre>author_1 = {
+  "id": 123,
+  "name": {
+    "first": 'Aaron',
+    "last": 'Swartz'},
+  "company": ['Infogami', 'Reddit'],
+  "hobby": ['programming', 'blogging', 'politics']
+};</pre>
+        <p>
+            Query: <code>SELECT * FROM author where company = 'Reddit'
+            AND hobby = 'politics' ORDER BY name.first </code>
+        </p>
+
+        <pre>stores = [{
+  name: 'author',
+  keyPath: 'id',
+  indexes: [{
+    name: 'cf',
+    keyPath: ['company', 'name.first'],
+    multiEntry: true
+}, {
+    name: 'hf',
+    keyPath: ['hobby', 'name.first'],
+    multiEntry: true
+}];
+
+</pre> </article>
+        <article name="Sorted merge algorithm 2" class="smaller">
+            <h3>Sorted merge algorithm</h3>
+            <p>
+                Query: <code>SELECT * FROM author where company = 'Reddit'
+                AND hobby = 'politics' ORDER BY name.first </code>
+            </p>
+        <pre>cf_cursor_request = cf_index.openCursor(KeyRange.starts('Reddit'));
+hf_cursor_request = cf_index.openCursor(KeyRange.starts('politics'));</pre>
+        <div class="build">
+            <div class="two-col"><span class="left"><code>cf_cursor.continue()</code></span><span class="right"><code>hf_cursor.continue()</code></span></div>
+            <div class="two-col"><span class="left"><code>Aaron</code></span><span class="right"><code>Aaron</code></span></div>
+            <div class="two-col"><span class="left"><code>cf_cursor.continue()</code></span><span class="right"><code>hf_cursor.continue()</code></span></div>
+            <div class="two-col"><span class="left"><code>Alexis</code></span><span class="right"><code>Abraham</code></span></div>
+            <div class="two-col"><span class="left"><code></code></span><span class="right"><code>hf_cursor.continue(Alexis)</code></span></div>
+            <div class="two-col"><span class="left"><code>Alexis</code></span><span class="right"><code>Barack</code></span></div>
+            <div class="two-col"><span class="left"><code>cf_cursor.continue(Barack)</code></span><span class="right"><code></code></span></div>
+            <div class="two-col"><span class="left"><code>Bill</code></span><span class="right"><code>Barack</code></span></div>
+            <div class="two-col"><span class="left"><code></code></span><span class="right"><code>hf_cursor.continue(Bill)</code></span></div>
+            <div class="two-col"><span class="left"><code>Bill</code></span><span class="right"><code>Bill</code></span></div>
+        </div>
+
+    </article>
+
+    <article name="Parent-child query" class="smaller">
         <h3>Parent-child query</h3>
         <pre>author_2 = {
   "id": 123,
@@ -282,6 +429,7 @@ article_1 = {
         <p>Compute time: <code>O(log (n<sup>3k<sub>h</sub></sup>))</code></p>
          </div>
     </article>
+
     <article class="smaller">
         <div class="build">
 
