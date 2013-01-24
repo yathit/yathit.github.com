@@ -301,7 +301,7 @@ authors = [{
         <p><code style="font-size: smaller">db.list('author', 'hobby',
             KeyRange.only('programming'))</code></p>
         <p>Index disk storage: <code>&ntilde;<sub>h</sub> n</code><br>
-        Compute time: <code>O(log (&ntilde;<sub>h</sub> n))</code></p>
+        Compute time: <code>O(log (n))</code></p>
 
         </div>
     </div>
@@ -329,12 +329,12 @@ authors = [{
     multiEntry: true
 }];
 
-</pre>
+</pre>    <div>
         <pre>key_range = KeyRange.bound(['programming'], ['programming', '\uffff']);
 db.list('article', 'hf', key_range);</pre>
-     <div>
+
         <p>Index disk storage: <code>&ntilde;<sub>h</sub> n</code><br>
-        Compute time: <code>O(log (&ntilde;<sub>h</sub> n))</code></p>
+        Compute time: <code>O(log (n))</code></p>
      </div>
         </div>
     </article>
@@ -350,8 +350,9 @@ db.list('article', 'hf', key_range);</pre>
   "hobby": ['programming', 'blogging', 'politics']
 };</pre>
         <p>
-            Query: <code>SELECT * FROM author where company = 'Reddit'
-            AND hobby = 'politics' ORDER BY name.first </code>
+            <code>SELECT * FROM author </code><br><code>
+            WHERE company = 'Reddit' AND hobby = 'politics' </code><br><code>
+            ORDER BY name.first </code>
         </p>
         <div class="build">
         <pre>stores = [{
@@ -363,12 +364,12 @@ db.list('article', 'hf', key_range);</pre>
     multiEntry: true
 }];
 
-</pre>
+</pre>       <div>
         <pre>key_range = KeyRange.starts(['Reddit', 'politics']);
 db.list('article', 'chf', key_range);</pre>
-            <div>
-                <p>Index disk storage: <code>&ntilde;<sub>c</sub> &ntilde;<sub>h</sub> n</code><br>
-                    Compute time: <code>O(log (&ntilde;<sub>c</sub> &ntilde;<sub>h</sub> n))</code></p>
+
+                <p>Index disk storage: <code>&ntilde;<sub>c</sub> n * &ntilde;<sub>h</sub> n</code><br>
+                    Compute time: <code>O(log (n<sup>2</sup>))</code></p>
             </div>
         </div>
     </article>
@@ -384,8 +385,9 @@ db.list('article', 'chf', key_range);</pre>
   "hobby": ['programming', 'blogging', 'politics']
 };</pre>
         <p>
-            Query: <code>SELECT * FROM author where company = 'Reddit'
-            AND hobby = 'politics' ORDER BY name.first </code>
+            <code>SELECT * FROM author </code><br><code>
+            WHERE company = 'Reddit' AND hobby = 'politics' </code><br><code>
+            ORDER BY name.first </code>
         </p>
 
         <pre>stores = [{
@@ -405,22 +407,22 @@ db.list('article', 'chf', key_range);</pre>
         <article name="Sorted merge algorithm 2" class="smaller">
             <h3>Sorted merge algorithm</h3>
             <p>
-                Query: <code>SELECT * FROM author where company = 'Reddit'
-                AND hobby = 'politics' ORDER BY name.first </code>
+                <code>SELECT * FROM author <br/>WHERE company = 'Reddit'
+                AND hobby = 'politics' <br/>ORDER BY name.first </code>
             </p>
-        <pre>cf_cursor_request = cf_index.openCursor(KeyRange.starts('Reddit'));
-hf_cursor_request = cf_index.openCursor(KeyRange.starts('politics'));</pre>
+        <pre>cf_cursor_request = company_index.openKeyCursor(KeyRange.starts('Reddit'));
+hf_cursor_request = hobby_index.openKeyCursor(KeyRange.starts('politics'));</pre>
         <div class="build">
             <div class="two-col"><span class="left"><code>cf_cursor.continue()</code></span><span class="right"><code>hf_cursor.continue()</code></span></div>
-            <div class="two-col"><span class="left"><code>Aaron</code></span><span class="right"><code>Aaron</code></span></div>
+            <div class="two-col"><span class="left"><code class="answer">Aaron</code></span><span class="right"><code class="answer">Aaron</code></span></div>
             <div class="two-col"><span class="left"><code>cf_cursor.continue()</code></span><span class="right"><code>hf_cursor.continue()</code></span></div>
             <div class="two-col"><span class="left"><code>Alexis</code></span><span class="right"><code>Abraham</code></span></div>
-            <div class="two-col"><span class="left"><code></code></span><span class="right"><code>hf_cursor.continue(Alexis)</code></span></div>
+            <div class="two-col"><span class="left"><code></code></span><span class="right"><code>hf_cursor.continue('Alexis')</code></span></div>
             <div class="two-col"><span class="left"><code>Alexis</code></span><span class="right"><code>Barack</code></span></div>
-            <div class="two-col"><span class="left"><code>cf_cursor.continue(Barack)</code></span><span class="right"><code></code></span></div>
+            <div class="two-col"><span class="left"><code>cf_cursor.continue('Barack')</code></span><span class="right"><code></code></span></div>
             <div class="two-col"><span class="left"><code>Bill</code></span><span class="right"><code>Barack</code></span></div>
-            <div class="two-col"><span class="left"><code></code></span><span class="right"><code>hf_cursor.continue(Bill)</code></span></div>
-            <div class="two-col"><span class="left"><code>Bill</code></span><span class="right"><code>Bill</code></span></div>
+            <div class="two-col"><span class="left"><code></code></span><span class="right"><code>hf_cursor.continue('Bill')</code></span></div>
+            <div class="two-col"><span class="left"><code class="answer">Bill</code></span><span class="right"><code class="answer">Bill</code></span></div>
         </div>
 
     </article>

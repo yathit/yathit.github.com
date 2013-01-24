@@ -649,3 +649,16 @@ div.two-col > span.right {
     width:50%;
     float:right;
 }
+
+@-webkit-keyframes 'blink' {
+    0% { background: rgba(0,255,0,0.1); }
+    50% { background: rgba(0,255,0,0); }
+    100% { background: rgba(0,255,0,0.1); }
+}
+
+.answer {
+    -webkit-animation-direction: normal;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-name: blink;
+}
