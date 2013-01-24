@@ -164,6 +164,10 @@ body {
   background: white url(images/ydn-logo.svg) 50% 50% no-repeat;
 }
 
+.slides.template-ydn-db article.biglogo {
+    background: white url(images/ydn-logo.svg) 50% 50% no-repeat;
+}
+
 .slides.template-io2011 article.biglogo {
   background: white url(images/googleio-logo.png) 50% 50% no-repeat;
 

@@ -121,38 +121,75 @@ var cursor_req = date_index.openCursor(key_range);</pre>
         </p>
     </article>
 
-    <article name="One-to-many relationship">
+    <article name="One-to-many relationship" class="smaller">
 
         <h3>One-to-many relationship</h3>
 
-        <pre>author_2 = {
-  "id": 124 // primary key, keyPath: "id"
+        <pre>company_1 = { // many side
+  "name": 'Facebook', // primary key
+  "slogan": "connects you with the author around you"
+}
+author_2 = {  // one side
+  "id": 124 // primary key
   "name" {"first": 'Michael', "last": 'Bolin'},
   "employment": {
-    "current": 'Facebook',
+    "current": 'Facebook', // foreign key
     "past": ['MIT', 'Google']
   },
   "hobby": ['programming', 'gaming', 'blogging']
-};
-company_1 = {
-  "name": 'Facebook', // primary key
-  "slogan": "connects you with the author around you"
-}</pre>
+};</pre>
          <pre>stores: [{
   name: 'author',
   keyPath: 'id',
   indexes: [{
-    keyPath: 'employment'
+    name = 'ec',
+    keyPath: 'employment.current'
   }]
 }, {
   name: 'company',
   keyPath: 'name'
 }];</pre>
+
+        <p>Querying from many-to-one</p>
+        <pre>db.list('author', 'ec', KeyRange.only('Facebook'))</pre>
     </article>
 
-    <article class="smaller">
+    <article name="Parent-child relationship" class="smaller">
+        <h3>Parent-child relationship</h3>
+        <pre>author_2 = {
+  "id": 124, // primary key
+  "name": {
+    "first": 'Michael',
+    "last": 'Bolin'}
+};
+article_1 = {
+  "author_id": 124   // primary key
+  "title": 'Inheritance Patterns in JavaScript',  // primary key
+  "url": 'http://bolinfest.com/javascript/inheritance.php',
+  "summary": 'The Closure Library makes use of the pseudoclassical inheritance pattern, which is particularly compelling when ...'
+};</pre>    <div class="build">
+        <pre>stores = [{
+    name: 'author',
+    keyPath: 'id'
+}, {
+    name: 'article',
+    keyPath: ['author_id', 'title']
+}];
+</pre>
 
-        <p>One-to-many relationship</p>
+            <p>
+                Query all children<br> <code>SELECT * FROM article WHERE author_id = 124 </code>
+            </p>
+
+
+            <pre>db.list('article', KeyRange.bound([124], [124, '\uffff'])</pre>
+
+        </div>
+    </article>
+
+    <article name="Parent-child relationship" class="smaller">
+        <h3>Parent-child relationship</h3>
+
         <div class="build">
         <pre>author_2 = {
   "id": 124 // primary key, keyPath: "id"
@@ -164,12 +201,12 @@ company_1 = {
   "name": 'Facebook', // primary key
   "slogan": "connects you with the author around you"
 }</pre>
-        <p>Many-to-many relationship</p>
+
          <pre>hobby_1 = {
   "name": 'programming', // primary key
   "description": 'Computer programming is the process of designing, writing, testing, debugging, and maintaining the source code of computer programs.'
 };</pre>
-        <p>Parent-child relationship</p>
+
 
         <pre>article_1 = {
   "author_id": 124
@@ -179,6 +216,44 @@ company_1 = {
             <p class="build">keyPath: <code>["author_id", "title"]</code></p>
         </div>
     </article>
+
+    <article name="Many-to-many relationship" class="smaller">
+        <h3>Many-to-many relationship</h3>
+
+
+        <pre>author_1 = {"id": 123, // primary key
+  "name": { "first": 'Aaron', "last": 'Swartz'},
+  "hobby": ['programming', 'blogging', 'politics'] // list of foreign key
+};
+author_2 = {"id": 124 // primary key
+  "name" {"first": 'Michael', "last": 'Bolin'},
+  "hobby": ['programming', 'gaming', 'blogging']
+};
+hobby_1 = {"name": 'programming', // primary key
+  "description": 'Computer programming is the process of designing, writing, testing, debugging, and maintaining the source code of computer programs.'
+};
+hobby_2 = {"name": 'gaming', // primary key
+  "description": 'Gaming is the act of playing a game.'
+};</pre>
+        <div class="build">
+      <pre>stores = [{name: 'author',
+  keyPath: 'id',
+  indexes: [{
+    keyPath: 'hobby'
+}], {name: 'hobby',
+    keyPath: 'name'
+}];
+</pre>     <p>
+            Query from hobby to author<br> <code>SELECT * FROM author WHERE hobby = 'programming' </code>
+        </p>
+
+            <pre>db.list('author', 'hobby', KeyRange.only('programming')</pre>
+
+        </div>
+    </article>
+
+
+
     <article name="Query" class="smaller">
         <h3>Query</h3>
         <h4>Database lookup cost</h4>
@@ -205,23 +280,23 @@ company_1 = {
     "last": 'Swartz'},
   "hobby": ['programming', 'blogging', 'politics']
 };</pre>
-        <div class="build">
 
             <p>
-                <code>born &gt; 1980 AND born &lt; 1990 </code>
+                <code>born &gt; 315504000000 AND born &lt; 631123200000 </code>
             </p>
-
-        <pre>index = {
-  name: 'idx_b',
-  keyPath: 'born'
+        <div class="build">
+        <pre>store = {
+  name: 'author',
+  indexes: [{
+  keyPath: 'born'}]
 }</pre>
-            <p>Query: <code style="font-size: smaller">db.list('author', 'idx_b',
+            <p>Query: <code style="font-size: smaller">db.list('author', 'born',
                 KeyRange.bound(315504000000, 631123200000)</code></p>
             <p>Index disk storage: <code>n</code></p>
             <p>Compute time: <code>O(log n)</code></p>
         </div>
     </article>
-    <article class="smaller">
+    <article name="Listed index query" class="smaller">
     <h3>Listed index query</h3>
         <pre>author_2 = {
   "id": 123
@@ -368,43 +443,9 @@ hf_cursor_request = cf_index.openCursor(KeyRange.starts('politics'));</pre>
 
     </article>
 
-    <article name="Parent-child query" class="smaller">
-        <h3>Parent-child query</h3>
-        <pre>author_2 = {
-  "id": 123,
-  "name": {
-    "first": 'Aaron',
-    "last": 'Swartz'},
-  "hobby": ['programming', 'blogging', 'politics']
-};      
-article_1 = {
-  "author_id": 124
-  "title": 'Inheritance Patterns in JavaScript',
-  "content": 'The Closure Library makes use of the pseudoclassical inheritance pattern, which is particularly compelling when ...'
-};</pre>
-        <pre>stores = [{
-    name: 'author',
-    keyPath: 'id'
-}, {
-    name: 'article',
-    keyPath: ['author_id', 'title']
-}];
-</pre>
-        <div class="build">
 
-            <p>
-                Query: <code>SELECT * FROM article where author_id = 123 </code>
-            </p>
-
-
-            <p>Query: <code>db.list('article',
-                KeyRange.starts([123])</code></p>
-            <p>Index disk storage: <code>0</code></p>
-            <p>Compute time: <code>O(log n<sub>article</sub>)</code></p>
-        </div>
-    </article>
     
-    <article class="smaller">
+    <article name="Query" class="smaller">
         <h3>Query</h3>
         <pre>author_2 = {
   "id": 124 // primary key, keyPath: "id"
