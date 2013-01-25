@@ -11,7 +11,7 @@
 */
 
 var PERMANENT_URL_PREFIX = location.hostname == 'localhost' ?
-    'http://localhost/yathit/presentations/template/' : 'http://yathit.github.com/presentations/template/';
+    'http://localhost/yathit/talks/template/' : 'http://yathit.github.com/talks/template/';
 
 var SLIDE_CLASSES = ['far-past', 'past', 'current', 'next', 'far-next'];
 
