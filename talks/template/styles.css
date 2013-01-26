@@ -651,9 +651,10 @@ div.two-col > span.right {
 }
 
 @-webkit-keyframes 'blink' {
-    0% { background: rgba(0,255,0,0.1); }
-    50% { background: rgba(0,255,0,0); }
-    100% { background: rgba(0,255,0,0.1); }
+    0% { background: rgba(0,255,0,0.2); }
+    45% { background: rgba(0,255,0,0); }
+    55% { background: rgba(0,255,0,0); }
+    100% { background: rgba(0,255,0,0.2); }
 }
 
 .answer {

@@ -24,11 +24,10 @@
 
     <article name="YDN-DB">
         <h1>
-            YDN-DB
+            Using IndexedDB
         </h1>
         <h3>
-            Beautiful database API for <i>secure</i>, <i>robust</i>, <i>high-performance</i>,
-            <i>maintainable</i>, <i>large-scale</i> javascript web app.
+            Through YDN-DB wrapper library.
         </h3>
 
         <p>
@@ -41,16 +40,16 @@
 
     <article name="Ideal usages">
         <h3>
-            Ideal usages of client side data storing techniques
+            Typical usages of client side data caching techniques
         </h3>
         <br/>
         <div class="build">
         <p>Cache-Control, ApplicationCache, WebStorage, IndexedDB</p>
         <ul class="build">
             <li>Cache-Control - the best for caching <i class="green">everything</i></li>
-            <li>ApplicationCache - <b>all</b> installed application bundle (<i class="red">no web pages or resources</i>)</li>
+            <li>ApplicationCache - for installed application bundle (<i class="red">not for web site</i>)</li>
             <li>WebStorage (localStorage) - for setting (<i class="yellow">read only once</i>)</li>
-            <li>IndexedDB - for <i class="green">all</i> application data</li>
+            <li>IndexedDB - for <i class="green">all</i> data</li>
         </ul>
         <p>All of them respect same origin policy.</p>
         </div>
@@ -86,8 +85,19 @@
         </h3>
 
         <p>Transactional database</p>
-            <pre>var storage = new ydn.db.Storage('library-webapp'); var db = storage.db();
-var tx = db.transaction(['author'], 'readwrite');</pre>
+            <pre>var schema = {
+  version: 1,
+  stores: [{
+    name: 'author',
+    keyPath: 'id',
+    indexes: [{
+      keyPath: 'name.first'
+    }, {
+      keyPath: 'hobby'
+    }]
+  }]
+};
+var storage = new ydn.db.Storage('library-webapp', schema); </pre>
         <p>Asynchronous API</p>
                 <pre>var objectStore = tx.objectStore('author');
 var idb_request = objectStore.get(123); // add, put, delete
@@ -105,16 +115,7 @@ var idb_request = date_index.get('programming');
 ...
 var cursor_req = date_index.openCursor(key_range);</pre>
 
-        <p>Support: Chrome, Firefox, IE10, Blackberry 10</p>
-
-        <p style="display: none">
-            <span><img src="../template/images/browser/individual-browser-logos/128-chrome.png"/> </span>
-            <span><img src="../template/images/browser/individual-browser-logos/128-firefox.png"/> </span>
-            <span class="browser-unsupported"><img
-                    src="../template/images/browser/individual-browser-logos/128-safari.png"/> </span>
-            <span><img src="../template/images/browser/individual-browser-logos/128-ie.png"/> </span>
-            <span><img src="../template/images/browser/individual-browser-logos/Opera_128x128.png"/> </span>
-        </p>
+        <p>Browser Support: Chrome, Firefox, IE10, Blackberry 10</p>
 
         <p>
             <a href="http://www.w3.org/TR/IndexedDB/">http://www.w3.org/TR/IndexedDB/</a>
@@ -341,32 +342,30 @@ db.list('article', 'hf', key_range);</pre>
 
     <article name="Multi filter sorting" class="smaller">
         <h3>Multi-filter sorting</h3>
-        <pre>author_1 = {
-  "id": 123,
-  "name": {
-    "first": 'Aaron',
-    "last": 'Swartz'},
-  "company": ['Infogami', 'Reddit'],
-  "hobby": ['programming', 'blogging', 'politics']
-};</pre>
+        <pre>author_2 = {"id": 124, // primary key
+  "name": {"first": 'Michael',
+    "last": 'Bolin'},
+  "company": {"current": 'Facebook',
+    "previous": 'Google'
+   }
+}</pre>
         <p>
-            <code>SELECT * FROM author </code><br><code>
-            WHERE company = 'Reddit' AND hobby = 'politics' </code><br><code>
+            <code>SELECT * FROM author <br>
+            WHERE company.current = 'Facebook' AND company.previous = 'Google' <br>
             ORDER BY name.first </code>
         </p>
         <div class="build">
-        <pre>stores = [{
-  name: 'author',
+        <pre>stores = [{name: 'author',
   keyPath: 'id',
   indexes: [{
-    name: 'chf',
-    keyPath: ['company', 'hobby', 'name.first'],
+    name: 'cpf',
+    keyPath: ['company.current', 'company.previous', 'name.first'],
     multiEntry: true
 }];
 
 </pre>       <div>
-        <pre>key_range = KeyRange.starts(['Reddit', 'politics']);
-db.list('article', 'chf', key_range);</pre>
+        <pre>key_range = KeyRange.starts(['Facebook', 'Google']);
+db.list('article', 'cpf', key_range);</pre>
 
                 <p>Index disk storage: <code>&ntilde;<sub>c</sub> n * &ntilde;<sub>h</sub> n</code><br>
                     Compute time: <code>O(log (n<sup>2</sup>))</code></p>
@@ -376,30 +375,29 @@ db.list('article', 'chf', key_range);</pre>
 
     <article name="Sorted merge algorithm" class="smaller">
         <h3>Sorted merge algorithm</h3>
-        <pre>author_1 = {
-  "id": 123,
-  "name": {
-    "first": 'Aaron',
-    "last": 'Swartz'},
-  "company": ['Infogami', 'Reddit'],
-  "hobby": ['programming', 'blogging', 'politics']
-};</pre>
+        <pre>author_2 = {"id": 124, // primary key
+  "name": {"first": 'Michael',
+    "last": 'Bolin'},
+  "company": {"current": 'Facebook',
+    "previous": 'Google'
+   }
+}</pre>
         <p>
-            <code>SELECT * FROM author </code><br><code>
-            WHERE company = 'Reddit' AND hobby = 'politics' </code><br><code>
-            ORDER BY name.first </code>
+            <code>SELECT * FROM author <br>
+                WHERE company.current = 'Facebook' AND company.previous = 'Google' <br>
+                ORDER BY name.first </code>
         </p>
 
         <pre>stores = [{
   name: 'author',
   keyPath: 'id',
   indexes: [{
-    name: 'cf',
-    keyPath: ['company', 'name.first'],
+    name: 'cc',
+    keyPath: ['company', 'current'],
     multiEntry: true
 }, {
-    name: 'hf',
-    keyPath: ['hobby', 'name.first'],
+    name: 'cp',
+    keyPath: ['company', 'previous'],
     multiEntry: true
 }];
 
@@ -407,22 +405,23 @@ db.list('article', 'chf', key_range);</pre>
         <article name="Sorted merge algorithm 2" class="smaller">
             <h3>Sorted merge algorithm</h3>
             <p>
-                <code>SELECT * FROM author <br/>WHERE company = 'Reddit'
-                AND hobby = 'politics' <br/>ORDER BY name.first </code>
+                <code>SELECT * FROM author <br>
+                    WHERE company.current = 'Facebook' AND company.previous = 'Google' <br>
+                    ORDER BY name.first </code>
             </p>
-        <pre>cf_cursor_request = company_index.openKeyCursor(KeyRange.starts('Reddit'));
-hf_cursor_request = hobby_index.openKeyCursor(KeyRange.starts('politics'));</pre>
+        <pre>cc_cursor_req = current_company_index.openKeyCursor(KeyRange.starts(['Facebook']));
+cp_cursor_req = previous_company_index.openKeyCursor(KeyRange.starts(['Google']));</pre>
         <div class="build">
-            <div class="two-col"><span class="left"><code>cf_cursor.continue()</code></span><span class="right"><code>hf_cursor.continue()</code></span></div>
-            <div class="two-col"><span class="left"><code class="answer">Aaron</code></span><span class="right"><code class="answer">Aaron</code></span></div>
-            <div class="two-col"><span class="left"><code>cf_cursor.continue()</code></span><span class="right"><code>hf_cursor.continue()</code></span></div>
-            <div class="two-col"><span class="left"><code>Alexis</code></span><span class="right"><code>Abraham</code></span></div>
-            <div class="two-col"><span class="left"><code></code></span><span class="right"><code style="font-size: 70%">hf_cursor.continue(['politics', 'Alexis'])</code></span></div>
-            <div class="two-col"><span class="left"><code>Alexis</code></span><span class="right"><code>Barack</code></span></div>
-            <div class="two-col"><span class="left"><code style="font-size: 70%">cf_cursor.continue(['Reddit', 'Barack'])</code></span><span class="right"><code></code></span></div>
-            <div class="two-col"><span class="left"><code>Bill</code></span><span class="right"><code>Barack</code></span></div>
-            <div class="two-col"><span class="left"><code></code></span><span class="right"><code style="font-size: 70%">hf_cursor.continue(['politics', 'Bill'])</code></span></div>
-            <div class="two-col"><span class="left"><code class="answer">Bill</code></span><span class="right"><code class="answer">Bill</code></span></div>
+            <div class="two-col"><span class="left"><code>cc_cursor.continue()</code></span><span class="right"><code>cp_cursor.continue()</code></span></div>
+            <div class="two-col"><span class="left"><code>Andrei</code></span><span class="right"><code>Matt</code></span></div>
+            <div class="two-col"><span class="left"><code style="font-size: 70%">cc_cursor.continue(['Facebook', 'Matt'])</code></span><span class="right"><code></code></span></div>
+            <div class="two-col"><span class="left"><code>Michael</code></span><span class="right"><code>Matt</code></span></div>
+            <div class="two-col"><span class="left"><code></code></span><span class="right"><code style="font-size: 70%">cp_cursor.continue(['Google', 'Michael'])</code></span></div>
+            <div class="two-col"><span class="left"><code class="answer">Michael</code></span><span class="right"><code class="answer">Michael</code></span></div>
+            <div class="two-col"><span class="left"><code style="font-size: 70%">cc_cursor.continue()</code></span><span class="right"><code>cp_cursor.continue()</code></span></div>
+            <div class="two-col"><span class="left"><code>Ryan</code></span><span class="right"><code>Nick</code></span></div>
+            <div class="two-col"><span class="left"><code></code></span><span class="right"><code style="font-size: 70%">cp_cursor.continue(['Google', 'Ryan'])</code></span></div>
+            <div class="two-col"><span class="left"><code class="answer">Ryan</code></span><span class="right"><code class="answer">Ryan</code></span></div>
         </div>
 
     </article>
