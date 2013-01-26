@@ -634,7 +634,7 @@ article.smaller q::after {
 div.two-col {
     width: 100%;
     clear:both;
-
+    font-size: smaller;
 }
 
 div.two-col > span.left {
@@ -662,3 +662,4 @@ div.two-col > span.right {
     -webkit-animation-iteration-count: infinite;
     -webkit-animation-name: blink;
 }
+
