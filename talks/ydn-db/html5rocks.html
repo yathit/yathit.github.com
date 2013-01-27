@@ -44,12 +44,13 @@
         </h3>
         <br/>
         <div class="build">
-        <p>Cache-Control, ApplicationCache, WebStorage, IndexedDB</p>
+        <p>Cache-Control, ApplicationCache, WebStorage, IndexedDB, FileSystem</p>
         <ul class="build">
             <li>Cache-Control - the best for caching <i class="green">everything</i></li>
-            <li>ApplicationCache - for installed application bundle (<i class="red">not for web site</i>)</li>
+            <li>ApplicationCache - for offline web application (<i class="red">not for online web site</i>)</li>
             <li>WebStorage (localStorage) - for setting (<i class="yellow">read only once</i>)</li>
             <li>IndexedDB - for <i class="green">all</i> data</li>
+            <li>FileSystem - <span class="magenta ">leave this legacy concept behind and move on</span></li>
         </ul>
         <p>All of them respect same origin policy.</p>
         </div>
@@ -74,30 +75,44 @@
      <p>
          Database name: '<span class="blue">library-webapp</span>'<br>
          Object store name: '<span class="green">author</span>'    <br>
-         <code>keyPath: 'id'</code></br>
-         Primary key: <span class="red">123</span>
+         Primary key: <span class="red">123</span></br>
+         <code>keyPath: 'id'</code>
      </p>
     </article>
 
     <article name="IndexedDB API" class="smaller">
         <h3>
-            IndexedDB API
+            IndexedDB API: Opening
         </h3>
 
-        <p>Transactional database</p>
-            <pre>var schema = {
+        <p>Opening the database through IndexedDB</p>
+            <pre>var request = window.indexedDB.open('library-webapp', 1);
+request.onupgradeneeded = function(e) {
+  db = e.target.result;
+  var objectStore = db.createObjectStore("author", { keyPath: "id" });
+  objectStore.createIndex("first", "name.first");
+  objectStore.createIndex("hobby", "hobby", {multiEntry: true});
+};
+</pre>
+        <p>Opening the database through YDN-DB</p>
+         <pre>var schema = {
   version: 1,
   stores: [{
     name: 'author',
     keyPath: 'id',
     indexes: [{
+      name: 'first',
       keyPath: 'name.first'
     }, {
-      keyPath: 'hobby'
+      keyPath: 'hobby',
+      multiEntry: true
     }]
   }]
 };
 var storage = new ydn.db.Storage('library-webapp', schema); </pre>
+
+        </article>
+    <article>
         <p>Asynchronous API</p>
                 <pre>var objectStore = tx.objectStore('author');
 var idb_request = objectStore.get(123); // add, put, delete
@@ -368,7 +383,7 @@ db.list('article', 'hf', key_range);</pre>
 db.list('article', 'cpf', key_range);</pre>
 
                 <p>Index disk storage: <code>&ntilde;<sub>c</sub> n * &ntilde;<sub>h</sub> n</code><br>
-                    Compute time: <code>O(log (n<sup>2</sup>))</code></p>
+                    Compute time: <code>O(2 log n)</code></p>
             </div>
         </div>
     </article>

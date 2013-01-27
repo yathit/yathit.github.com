@@ -292,6 +292,9 @@ b {
 .white {
   color: white;
 }
+.magenta {
+    color: #8B008B;
+}
 
 a {
   color: rgb(0, 102, 204);
