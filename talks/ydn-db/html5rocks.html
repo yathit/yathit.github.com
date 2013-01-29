@@ -80,12 +80,12 @@
      </p>
     </article>
 
-    <article name="IndexedDB API" class="smaller">
+    <article name="Opening IndexedDB" class="smaller">
         <h3>
-            IndexedDB API: Opening
+            IndexedDB: Creating a connection
         </h3>
 
-        <p>Opening the database through IndexedDB</p>
+        <p>Opening the database using IndexedDB API</p>
             <pre>var request = window.indexedDB.open('library-webapp', 1);
 request.onupgradeneeded = function(e) {
   db = e.target.result;
@@ -94,7 +94,7 @@ request.onupgradeneeded = function(e) {
   objectStore.createIndex("hobby", "hobby", {multiEntry: true});
 };
 </pre>
-        <p>Opening the database through YDN-DB</p>
+        <p>Opening the database using YDN-DB</p>
          <pre>var schema = {
   version: 1,
   stores: [{
@@ -112,29 +112,64 @@ request.onupgradeneeded = function(e) {
 var storage = new ydn.db.Storage('library-webapp', schema); </pre>
 
         </article>
-    <article>
-        <p>Asynchronous API</p>
-                <pre>var objectStore = tx.objectStore('author');
-var idb_request = objectStore.get(123); // add, put, delete
-idb_request.onsuccess = function(e) {
+    <article name="IndexedDB: CRUD operation" class="smaller">
+        <h3>
+            IndexedDB: CRUD database operations
+        </h3>
+        <p>Using IndexedDB API</p>
+                <pre>var tx = db.transaction('readonly', 'author');
+var store = tx.objectStore('author');
+var request = store.get(123);
+request.onsuccess = function(e) {
   console.log(e.target.result);
 }
-idb_request.onerror = function(e) {
+request.onerror = function(e) {
   throw e;
 }
-...
-var cursor_req = objectStore.openCursor(key_range);</pre>
-        <p>Indexing</p>
-            <pre>var date_index = objectStore.index('hobby');
-var idb_request = date_index.get('programming');
-...
-var cursor_req = date_index.openCursor(key_range);</pre>
+request = store.add(obj, 123); // create
+request = store.put(obj, 123); // update
+request = store.delete(123);   // delete
+request = store.clear();       // clear store</pre>
+        <p>Using YDN-DB</p>
+                <pre>var deferred_result = db.get('author', 123);
+deferred_result.done(function(record) {
+  console.log(record);
+});
+deferred_result.fail(function(e) {
+  throw e;
+});
+deferred_result = db.add('author', obj, 123); // create
+deferred_result = db.put('author', obj, 123); // update
+deferred_result = db.clear('author', 123);    // delete
+deferred_result = db.clear('author');         // clear store</pre>
 
-        <p>Browser Support: Chrome, Firefox, IE10, Blackberry 10</p>
+    </article>
 
-        <p>
-            <a href="http://www.w3.org/TR/IndexedDB/">http://www.w3.org/TR/IndexedDB/</a>
-        </p>
+    <article name="IndexedDB: cursor iteration operations" class="smaller">
+        <h3>Cursor iteration operations</h3>
+        <p>Using IndexedDB API</p>
+
+                <pre>var tx = db.transaction('readwrite', 'author');
+var store = tx.objectStore('author');
+var cursor_req = store.openCursor(key_range);
+cursor_req.onsuccess = function(e) {
+  var cursor = e.target.result;
+  if (cursor) {
+    console.log(cursor.value); // read
+    cursor.update(new_value);  // update
+    cursor.delete();           // delete
+  } else {
+    console.log('no more record');
+  }
+}
+</pre>
+        <p>Using YDN-DB</p>
+         <pre>var iterator = new ydn.db.ValueIterator('author');
+var df = db.open(iterator, function(cursor) {
+  console.log(cursor.value()); // read
+  cursor.update(new_value);    // update
+  cursor.clear();              // delete
+}, 'readwrite');</pre>
     </article>
 
     <article name="One-to-many relationship" class="smaller">
@@ -520,7 +555,7 @@ ydn.db.core.req.IndexedDb.prototype.getTx = function() {
 
 /**
  * @param {!goog.async.Deferred} df return a deferred function.
- * @param {!Array.<string>}  stores store name.
+ * @param {!Array.&lt;string&gt;}  stores store name.
  */
 ydn.db.core.req.IndexedDb.prototype.countStores = function(df, stores) {
 
@@ -671,7 +706,7 @@ ydn.db.core.req.IndexedDb.prototype.addObjects = function(df, store_name, objs,
         df.callback(results);
       } else {
         var next = i + ydn.db.core.req.IndexedDb.REQ_PER_TX;
-        if (next < objs.length) {
+        if (next &lt; objs.length) {
           put(next);
         }
       }
@@ -700,10 +735,10 @@ ydn.db.core.req.IndexedDb.prototype.addObjects = function(df, store_name, objs,
 
   };
 
-  if (objs.length > 0) {
+  if (objs.length &gt; 0) {
     // send parallel requests
-    for (var i = 0; i < ydn.db.core.req.IndexedDb.REQ_PER_TX &&
-        i < objs.length; i++) {
+    for (var i = 0; i &lt; ydn.db.core.req.IndexedDb.REQ_PER_TX &&
+        i &lt; objs.length; i++) {
       put(i);
     }
   } else {
@@ -716,8 +751,8 @@ ydn.db.core.req.IndexedDb.prototype.addObjects = function(df, store_name, objs,
  * Execute PUT request either storing result to tx or callback to df.
  * @param {goog.async.Deferred} df deferred to feed result.
  * @param {string} store_name table name.
- * @param {!Array.<!Object>} objs object to put.
- * @param {!Array.<(!Array|string|number)>=} opt_keys optional out-of-line keys.
+ * @param {!Array.&lt;!Object&gt;} objs object to put.
+ * @param {!Array.&lt;(!Array|string|number)&gt;=} opt_keys optional out-of-line keys.
  */
 ydn.db.core.req.IndexedDb.prototype.putObjects = function(df, store_name, objs,
                                                       opt_keys) {
@@ -746,7 +781,7 @@ ydn.db.core.req.IndexedDb.prototype.putObjects = function(df, store_name, objs,
         df.callback(results);
       } else {
         var next = i + ydn.db.core.req.IndexedDb.REQ_PER_TX;
-        if (next < objs.length) {
+        if (next &lt; objs.length) {
           put(next);
         }
       }
@@ -775,10 +810,10 @@ ydn.db.core.req.IndexedDb.prototype.putObjects = function(df, store_name, objs,
 
   };
 
-  if (objs.length > 0) {
+  if (objs.length &gt; 0) {
     // send parallel requests
-    for (var i = 0; i < ydn.db.core.req.IndexedDb.REQ_PER_TX &&
-      i < objs.length; i++) {
+    for (var i = 0; i &lt; ydn.db.core.req.IndexedDb.REQ_PER_TX &&
+      i &lt; objs.length; i++) {
       put(i);
     }
   } else {
@@ -800,7 +835,7 @@ ydn.db.core.req.IndexedDb.prototype.putData = function(df, store_name, data,
   var prev_pos = data.indexOf('\n');
   var fields = data.substr(0, prev_pos).split(delimiter);
   var types = [];
-  for (var j = 0; j < fields.length; j++) {
+  for (var j = 0; j &lt; fields.length; j++) {
     var index = store.getIndex(fields[j]);
     if (index) {
       types[j] = index.getType();
@@ -828,7 +863,7 @@ ydn.db.core.req.IndexedDb.prototype.putData = function(df, store_name, data,
     }
 
     var values = text.split(delimiter);
-    for (var j = 0; j < fields.length; j++) {
+    for (var j = 0; j &lt; fields.length; j++) {
       var value = values[j];
       if (types[j]) {
         if (types[j] == ydn.db.schema.DataType.TEXT) {
@@ -1007,7 +1042,7 @@ ydn.db.core.req.IndexedDb.prototype.clearByStores = function(df, store_names) {
   var n_todo = store_names.length;
   var n_done = 0;
 
-  for (var i = 0; i < n_todo; i++) {
+  for (var i = 0; i &lt; n_todo; i++) {
     var store_name = store_names[i];
     var store = this.tx.objectStore(store_name);
     var request = store.clear();
@@ -1073,13 +1108,13 @@ ydn.db.core.req.IndexedDb.prototype.listByKeyRange_ = function(df, store_name,
      */
     var cursor = event.target.result;
     if (cursor) {
-      if (!cued && offset > 0) {
+      if (!cued && offset &gt; 0) {
         cued = true;
         cursor.advance(offset);
         return;
       }
       results.push(cursor.value);
-      if (results.length < limit) {
+      if (results.length &lt; limit) {
         cursor['continue']();
       } else {
         df.callback(results);
@@ -1127,13 +1162,13 @@ ydn.db.core.req.IndexedDb.prototype.keysByKeyRange = function(df, store_name,
   request.onsuccess = function(event) {
     var cursor = event.target.result;
     if (cursor) {
-      if (!cued && offset > 0) {
+      if (!cued && offset &gt; 0) {
         cued = true;
         cursor.advance(offset);
         return;
       }
       results.push(cursor.key);
-      if (results.length < limit) {
+      if (results.length &lt; limit) {
         cursor['continue']();
       } else {
         df.callback(results);
@@ -1167,13 +1202,13 @@ ydn.db.core.req.IndexedDb.prototype.keysByStore = function(df, store_name,
      */
     var cursor = event.target.result;
     if (cursor) {
-      if (!cued && offset > 0) {
+      if (!cued && offset &gt; 0) {
         cued = true;
         cursor.advance(offset);
         return;
       }
       results.push(cursor.primaryKey);
-      if (results.length < limit) {
+      if (results.length &lt; limit) {
         cursor['continue']();
       } else {
         df.callback(results);
@@ -1208,13 +1243,13 @@ ydn.db.core.req.IndexedDb.prototype.keysByIndexKeyRange = function(df, store_nam
      */
     var cursor = event.target.result;
     if (cursor) {
-      if (!cued && offset > 0) {
+      if (!cued && offset &gt; 0) {
         cued = true;
         cursor.advance(offset);
         return;
       }
       results.push(cursor.primaryKey);
-      if (results.length < limit) {
+      if (results.length &lt; limit) {
         cursor['continue']();
       }
     } else {
@@ -1275,7 +1310,7 @@ ydn.db.core.req.IndexedDb.prototype.listByStores = function(df, store_names) {
     };
   };
 
-  if (store_names.length > 0) {
+  if (store_names.length &gt; 0) {
     getAll(0);
   } else {
     df.callback([]);
@@ -1344,7 +1379,7 @@ ydn.db.core.req.IndexedDb.prototype.listByIds = function(df, store_name, ids) {
         df.callback(results);
       } else {
         var next = i + ydn.db.core.req.IndexedDb.REQ_PER_TX;
-        if (next < n) {
+        if (next &lt; n) {
           get(next);
         }
       }
@@ -1375,7 +1410,7 @@ ydn.db.core.req.IndexedDb.prototype.listByIds = function(df, store_name, ids) {
         df.callback(results);
       } else {
         var next = i + ydn.db.core.req.IndexedDb.REQ_PER_TX;
-        if (next < n) {
+        if (next &lt; n) {
           get(next);
         }
       }
@@ -1391,9 +1426,9 @@ ydn.db.core.req.IndexedDb.prototype.listByIds = function(df, store_name, ids) {
 
   };
 
-  if (n > 0) {
+  if (n &gt; 0) {
     // send parallel requests
-    for (var i = 0; i < ydn.db.core.req.IndexedDb.REQ_PER_TX && i < n; i++) {
+    for (var i = 0; i &lt; ydn.db.core.req.IndexedDb.REQ_PER_TX && i &lt; n; i++) {
       get(i);
     }
   } else {
@@ -1442,7 +1477,7 @@ ydn.db.core.req.IndexedDb.prototype.listByKeys = function(df, keys) {
         df.callback(results);
       } else {
         var next = i + ydn.db.core.req.IndexedDb.REQ_PER_TX;
-        if (next < keys.length) {
+        if (next &lt; keys.length) {
           getKey(next);
         }
       }
@@ -1459,9 +1494,9 @@ ydn.db.core.req.IndexedDb.prototype.listByKeys = function(df, keys) {
 
   };
 
-  if (keys.length > 0) {
+  if (keys.length &gt; 0) {
     // send parallel requests
-    for (var i = 0; i < ydn.db.core.req.IndexedDb.REQ_PER_TX && i < keys.length; i++)
+    for (var i = 0; i &lt; ydn.db.core.req.IndexedDb.REQ_PER_TX && i &lt; keys.length; i++)
     {
       getKey(i);
     }
@@ -1473,7 +1508,7 @@ ydn.db.core.req.IndexedDb.prototype.listByKeys = function(df, keys) {
 //
 ///**
 // * Index scanning.
-// * @param {!Array.<!ydn.db.Iterator>>} indexes list of indexes.
+// * @param {!Array.&lt;!ydn.db.Iterator&gt;&gt;} indexes list of indexes.
 // * @param {(function(keys: !Array, index_keys: !Array): number)=} callback
 // * @param {number=} limit limit number of match results.
 // * @param {boolean=} no_prefetch no prefetching of result.
@@ -1578,7 +1613,7 @@ ydn.db.core.req.IndexedDb.prototype.getKeysByIndexKeyRange = function(df, store_
         cur.advance(offset);
       }
       keys.push(cur.primaryKey);
-      if (goog.isDef(limit) && keys.length >= limit) {
+      if (goog.isDef(limit) && keys.length &gt;= limit) {
         df.callback(keys);
       } else {
         cur['continue']();
@@ -1630,7 +1665,7 @@ ydn.db.core.req.IndexedDb.prototype.getIndexKeysByKeys = function(df,
         df.callback(results);
       } else {
         var next = i + ydn.db.core.req.IndexedDb.REQ_PER_TX;
-        if (next < limit) {
+        if (next &lt; limit) {
           getKey(next);
         }
       }
@@ -1641,9 +1676,9 @@ ydn.db.core.req.IndexedDb.prototype.getIndexKeysByKeys = function(df,
     };
   };
 
-  if (keys.length > 0) {
+  if (keys.length &gt; 0) {
     // send parallel requests
-    for (var i = 0; i < ydn.db.core.req.IndexedDb.REQ_PER_TX && i < keys.length; i++)
+    for (var i = 0; i &lt; ydn.db.core.req.IndexedDb.REQ_PER_TX && i &lt; keys.length; i++)
     {
       getKey(i);
     }
