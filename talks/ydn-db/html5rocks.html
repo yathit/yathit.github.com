@@ -46,7 +46,7 @@
         <div class="build">
         <p>Cache-Control, ApplicationCache, WebStorage, IndexedDB, FileSystem</p>
         <ul class="build">
-            <li>Cache-Control - the best for caching <i class="green">everything</i></li>
+            <li>Cache-Control - for <i class="green">everything</i></li>
             <li>ApplicationCache - for offline web application (<i class="red">not for online web site</i>)</li>
             <li>WebStorage (localStorage) - for setting (<i class="yellow">read only once</i>)</li>
             <li>IndexedDB - for <i class="green">all</i> data</li>
@@ -93,18 +93,18 @@ request.onupgradeneeded = function(e) {
   objectStore.createIndex("first", "name.first");
   objectStore.createIndex("hobby", "hobby", {multiEntry: true});
 };
+request.onsuccess = function(e) {
+  db = e.target.result;
+}
 </pre>
         <p>Opening the database using YDN-DB</p>
          <pre>var schema = {
   version: 1,
-  stores: [{
-    name: 'author',
+  stores: [{name: 'author',
     keyPath: 'id',
-    indexes: [{
-      name: 'first',
+    indexes: [{name: 'first',
       keyPath: 'name.first'
-    }, {
-      keyPath: 'hobby',
+    }, {keyPath: 'hobby',
       multiEntry: true
     }]
   }]
@@ -152,6 +152,8 @@ deferred_result = db.clear('author');         // clear store</pre>
                 <pre>var tx = db.transaction('readwrite', 'author');
 var store = tx.objectStore('author');
 var cursor_req = store.openCursor(key_range);
+// var index = store.index('hobby');
+// var cursor_req = index.openKeyCursor(key_range);
 cursor_req.onsuccess = function(e) {
   var cursor = e.target.result;
   if (cursor) {
