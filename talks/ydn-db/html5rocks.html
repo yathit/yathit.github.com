@@ -568,8 +568,33 @@ CachedModel.prototype.sync = function (method, model, options) {
   }
 };</pre>
     </article>
-    <article name="Synchronization: Object store (Collection)">
+    <article name="Synchronization: Object store (Collection)" class="smaller">
+        <h3>Synchronization: Object store (Collection or Bucket)</h3>
 
+        <pre>&lt;feed xmlns='http://www.w3.org/2005/Atom' xmlns:gd='http://schemas.google.com/g/2005'
+    gd:etag='W/"C0QBRXcycSp7ImA9WxRVFUk."'&gt;
+  &lt;title&gt;Foo&lt;/title&gt;
+  &lt;updated&gt;2006-01-23T16:25:00-08:00&lt;/updated&gt;
+  &lt;id&gt;http://www.example.com/myFeed&lt;/id&gt;
+  &lt;link href='/myFeed' rel='self'/&gt;
+  &lt;entry gd:etag='"CUUEQX47eCp7ImA9WxRVEkQ."'&gt;
+    &lt;updated&gt;2006-01-23T16:26:03-08:00&lt;/updated&gt;
+    &lt;author&gt;
+        &lt;name&gt;Elizabeth Bennet&lt;/name&gt;
+        &lt;email&gt;liz@gmail.com&lt;/email&gt;
+    &lt;/author&gt;
+    &lt;title type='text'&gt;Entry 1&lt;/title&gt;
+    &lt;content type='text'&gt;This is my entry&lt;/content&gt;
+  &lt;/entry&gt;
+&lt;/feed&gt;</pre>
+
+        <p>Google Contact API synchronization strategy: Last updated record + total result<br>
+        Query parameters: <code>max-results=1 orderby=lastmodified sortorder=ascending</code></p>
+        <p>RESTfull blob store API (AWS S3, Google Cloud Storage)<br>
+            Use GET Bucket query with a limit.<br>
+        <i>Results are sorted by URI (primary key)!</i><br>
+        Query parameters: <code>max-keys=10 prefix=modelName marker=startKey</code><br>
+            HTTP Header: <code>Last-Modified: 2013-01-31T08:48:58.198Z</code>        </p>
     </article>
 
     <article>
