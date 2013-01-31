@@ -452,6 +452,7 @@ db.list('article', 'cpf', key_range);</pre>
 }];
 
 </pre> </article>
+
         <article name="Sorted merge algorithm 2" class="smaller">
             <h3>Sorted merge algorithm</h3>
             <p>
@@ -473,6 +474,101 @@ cp_cursor_req = previous_company_index.openKeyCursor(KeyRange.starts(['Google'])
             <div class="two-col"><span class="left"><code></code></span><span class="right"><code style="font-size: 70%">cp_cursor.continue(['Google', 'Ryan'])</code></span></div>
             <div class="two-col"><span class="left"><code class="answer">Ryan</code></span><span class="right"><code class="answer">Ryan</code></span></div>
         </div>
+
+    </article>
+
+    <article name="Synchronization: Record (Model)" class="smaller">
+        <h3>Synchronization: Record (Model)</h3>
+        <p>Mapping IndexedDB Object store methods and HTTP methods on REST resource</p>
+        <table>
+            <thead>
+            <tr>
+                <th>IndexedDB</th>
+                <th>HTTP</th>
+                <th>REST URI</th>
+                <th>Etag</th>
+                <th>Event</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>get</td>
+                <td>GET</td>
+                <td>/model/key</td>
+                <td>If-None-Match</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>add</td>
+                <td>POST</td>
+                <td>/model/(key)</td>
+                <td>If-Match</td>
+                <td>created</td>
+            </tr>
+            <tr>
+                <td>put</td>
+                <td>PUT</td>
+                <td>/model/key</td>
+                <td>If-Match</td>
+                <td>updated</td>
+            </tr>
+            <tr>
+                <td>delete</td>
+                <td>DELETE</td>
+                <td>/model/key</td>
+                <td>If-Match</td>
+                <td>deleted</td>
+            </tr>
+            </tbody>
+        </table>
+        <p>Listening object store record changes events</p>
+        <pre>var schema = {
+  stores: [{
+    name: 'author',
+    keyPath: 'id',
+    dispatchEvents: true
+  }]
+};
+var db = new ydn.db.Storage('db name', schema);
+db.addEventListener(['created', 'updated'], function (e) {
+  if (e.name == 'RecordEvent' && e.type == 'created' && e.getStoreName() == 'author') {
+    addNewRowOnAuthorTable(e.getKey(), e.getValue());
+  }
+});        </pre>
+        </article>
+    <article name="Synchronization: Record (Model)" class="smaller">
+        <h3>Synchronization: Record - Backbone example</h3>
+        <pre>CachedModel = Backbone.Model.extend({});
+CachedModel.prototype.sync = function (method, model, options) {
+  if (method == 'read') {
+    var df = $.Deferred(); var key = model.getKey();
+    db.get(store_name, key).done(function(data) {
+      if (data) {
+        df.resolve(data); // cached data available, send this first
+        $.ajax({ // check changes to server
+          url: model.url(),
+          headers: 'If-None-Match: ' + etag,
+          success: function(data) {
+            if (data) {  // if model has changes, update to model and the database.
+              model.set(data);
+              $.db.put(store_name, data, key);
+            }
+        });
+      } else {
+        $.ajax({ // no cache, load from server.
+          url: model.url(),
+          success: function(data) {
+            df.resolve(data);
+            db.put(store_name, data, key);
+          }
+        });
+      }
+    }
+    return df;
+  }
+};</pre>
+    </article>
+    <article name="Synchronization: Object store (Collection)">
 
     </article>
 
