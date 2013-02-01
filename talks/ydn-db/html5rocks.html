@@ -26,6 +26,7 @@
         <h1>
             Using IndexedDB
         </h1>
+        <br>
         <h3>
             Through YDN-DB wrapper library.
         </h3>
@@ -33,7 +34,7 @@
         <p>
             Kyaw Tun
             <br>
-            Feb 1, 2012
+            Feb 1, 2013
         </p>
     </article>
 
@@ -62,9 +63,9 @@
             IndexedDB is a document-oriented database
         </h3>
 
-        <p>http://api.example.com/<span class="blue">library-webapp</span>/<span class="green">author</span>/<span class="red">123</span></p>
+        <p>http://api.example.com/<span class="blue">library-webapp</span>/<span class="green">author</span>/<span class="red">a-123</span></p>
         <pre>{
-  "id": 123
+  "id": '123',
   "email": 'me@aaronsw.com',
   "born": 531763200000,
   "name": {
@@ -73,9 +74,9 @@
   "hobby": ['programming', 'blogging', 'politics']
 }</pre>
      <p>
-         Database name: '<span class="blue">library-webapp</span>'<br>
-         Object store name: '<span class="green">author</span>'    <br>
-         Primary key: <span class="red">123</span></br>
+         Database name: <span class="blue">'library-webapp'</span><br>
+         Object store name: <span class="green">'author'</span>    <br>
+         Primary key: <span class="red">'123'</span></br>
          <code>keyPath: 'id'</code>
      </p>
     </article>
@@ -90,7 +91,7 @@
 request.onupgradeneeded = function(e) {
   db = e.target.result;
   var objectStore = db.createObjectStore("author", { keyPath: "id" });
-  objectStore.createIndex("first", "name.first");
+  objectStore.createIndex("name", ["name.first", "name.second"]);
   objectStore.createIndex("hobby", "hobby", {multiEntry: true});
 };
 request.onsuccess = function(e) {
@@ -102,14 +103,15 @@ request.onsuccess = function(e) {
   version: 1,
   stores: [{name: 'author',
     keyPath: 'id',
-    indexes: [{name: 'first',
-      keyPath: 'name.first'
-    }, {keyPath: 'hobby',
+    indexes: [{name: 'name',
+      keyPath: ['name.first', 'name.last']
+    }, {name: 'hobby',
+      keyPath: 'hobby',
       multiEntry: true
     }]
   }]
 };
-var storage = new ydn.db.Storage('library-webapp', schema); </pre>
+var db = new ydn.db.Storage('library-webapp', schema); </pre>
 
         </article>
     <article name="IndexedDB: CRUD operation" class="smaller">
@@ -167,6 +169,7 @@ cursor_req.onsuccess = function(e) {
 </pre>
         <p>Using YDN-DB</p>
          <pre>var iterator = new ydn.db.ValueIterator('author');
+// var iterator = new ydn.db.KeyIndexIterator('author', 'hobby');
 var df = db.open(iterator, function(cursor) {
   console.log(cursor.value()); // read
   cursor.update(new_value);    // update
@@ -187,7 +190,7 @@ author_2 = {  // one side
   "name" {"first": 'Michael', "last": 'Bolin'},
   "employment": {
     "current": 'Facebook', // foreign key
-    "past": ['MIT', 'Google']
+    "previous": 'Google'
   },
   "hobby": ['programming', 'gaming', 'blogging']
 };</pre>
@@ -204,7 +207,7 @@ author_2 = {  // one side
 }];</pre>
 
         <p>Querying from many-to-one</p>
-        <pre>db.list('author', 'ec', KeyRange.only('Facebook'))</pre>
+        <pre>db.list('author', 'ec', IDBKeyRange.only('Facebook'))</pre>
     </article>
 
     <article name="Parent-child relationship" class="smaller">
@@ -273,7 +276,7 @@ authors = [{
             Query from hobby to author<br> <code>SELECT * FROM author WHERE hobby = 'programming' </code>
         </p>
 
-            <pre>db.list('author', 'hobby', KeyRange.only('programming'))</pre>
+            <pre>db.list('author', 'hobby', IDBKeyRange.only('programming'))</pre>
 
         </div>
     </article>
@@ -354,7 +357,7 @@ authors = [{
         <p><code style="font-size: smaller">db.list('author', 'hobby',
             KeyRange.only('programming'))</code></p>
         <p>Index disk storage: <code>&ntilde;<sub>h</sub> n</code><br>
-        Compute time: <code>O(log (n))</code></p>
+        Compute time: <code>O(log n)</code></p>
 
         </div>
     </div>
@@ -367,27 +370,30 @@ authors = [{
   "name": {
     "first": 'Aaron',
     "last": 'Swartz'},
-  "hobby": ['programming', 'blogging', 'politics']
+  "employment": {
+    "current": 'Facebook',
+    "previous": 'Google'
+  }
 };</pre>
         <p>
-           <code>SELECT * FROM author WHERE hobby = 'programming' ORDER BY name.first </code>
+           <code>SELECT * FROM author WHERE employment.current = 'Facebook' ORDER BY name.first </code>
         </p>
         <div class="build">
         <pre>stores = [{
   name: 'author',
   keyPath: 'id',
   indexes: [{
-    name: 'hf',
-    keyPath: ['hobby', 'name.first'],
+    name: 'employer',
+    keyPath: ['hobby', 'employment.current'],
     multiEntry: true
 }];
 
 </pre>    <div>
-        <pre>key_range = KeyRange.bound(['programming'], ['programming', '\uffff']);
-db.list('article', 'hf', key_range);</pre>
+        <pre>var key_range = IDBKeyRange.bound(['Facebook'], ['Facebook', '\uffff']);
+db.list('article', 'employer', key_range);</pre>
 
         <p>Index disk storage: <code>&ntilde;<sub>h</sub> n</code><br>
-        Compute time: <code>O(log (n))</code></p>
+        Compute time: <code>O(log n)</code></p>
      </div>
         </div>
     </article>
@@ -397,13 +403,14 @@ db.list('article', 'hf', key_range);</pre>
         <pre>author_2 = {"id": 124, // primary key
   "name": {"first": 'Michael',
     "last": 'Bolin'},
-  "company": {"current": 'Facebook',
+  "employment": {
+    "current": 'Facebook',
     "previous": 'Google'
    }
 }</pre>
         <p>
             <code>SELECT * FROM author <br>
-            WHERE company.current = 'Facebook' AND company.previous = 'Google' <br>
+            WHERE employment.current = 'Facebook' <br>AND employment.previous = 'Google' <br>
             ORDER BY name.first </code>
         </p>
         <div class="build">
@@ -411,16 +418,16 @@ db.list('article', 'hf', key_range);</pre>
   keyPath: 'id',
   indexes: [{
     name: 'cpf',
-    keyPath: ['company.current', 'company.previous', 'name.first'],
+    keyPath: ['employment.current', 'employment.previous', 'name.first'],
     multiEntry: true
 }];
 
 </pre>       <div>
-        <pre>key_range = KeyRange.starts(['Facebook', 'Google']);
+        <pre>var key_range = ydn.db.KeyRange.starts(['Facebook', 'Google']);
 db.list('article', 'cpf', key_range);</pre>
 
-                <p>Index disk storage: <code>&ntilde;<sub>c</sub> n * &ntilde;<sub>h</sub> n</code><br>
-                    Compute time: <code>O(2 log n)</code></p>
+                <p>Index disk storage: <code>n</code><br>
+                    Compute time: <code>O(log n)</code></p>
             </div>
         </div>
     </article>
@@ -430,13 +437,14 @@ db.list('article', 'cpf', key_range);</pre>
         <pre>author_2 = {"id": 124, // primary key
   "name": {"first": 'Michael',
     "last": 'Bolin'},
-  "company": {"current": 'Facebook',
+  "employment": {
+    "current": 'Facebook',
     "previous": 'Google'
    }
 }</pre>
         <p>
             <code>SELECT * FROM author <br>
-                WHERE company.current = 'Facebook' AND company.previous = 'Google' <br>
+                WHERE employment.current = 'Facebook' <br>AND employment.previous = 'Google' <br>
                 ORDER BY name.first </code>
         </p>
 
@@ -444,13 +452,11 @@ db.list('article', 'cpf', key_range);</pre>
   name: 'author',
   keyPath: 'id',
   indexes: [{
-    name: 'cc',
-    keyPath: ['company', 'current'],
-    multiEntry: true
+    name: 'current',
+    keyPath: ['employment', 'current']
 }, {
-    name: 'cp',
-    keyPath: ['company', 'previous'],
-    multiEntry: true
+    name: 'previous',
+    keyPath: ['employment', 'previous']
 }];
 
 </pre> </article>
@@ -459,19 +465,19 @@ db.list('article', 'cpf', key_range);</pre>
             <h3>Sorted merge algorithm</h3>
             <p>
                 <code>SELECT * FROM author <br>
-                    WHERE company.current = 'Facebook' AND company.previous = 'Google' <br>
+                    WHERE employment.current = 'Facebook' <br>AND employment.previous = 'Google' <br>
                     ORDER BY name.first </code>
             </p>
         <pre>cc_cursor_req = current_company_index.openKeyCursor(KeyRange.starts(['Facebook']));
 cp_cursor_req = previous_company_index.openKeyCursor(KeyRange.starts(['Google']));</pre>
         <div class="build">
-            <div class="two-col"><span class="left"><code>cc_cursor.continue()</code></span><span class="right"><code>cp_cursor.continue()</code></span></div>
+            <div class="two-col"><span class="left"><code>cc_cursor</code></span><span class="right"><code>cp_cursor</code></span></div>
             <div class="two-col"><span class="left"><code>Andrei</code></span><span class="right"><code>Matt</code></span></div>
             <div class="two-col"><span class="left"><code style="font-size: 70%">cc_cursor.continue(['Facebook', 'Matt'])</code></span><span class="right"><code></code></span></div>
             <div class="two-col"><span class="left"><code>Michael</code></span><span class="right"><code>Matt</code></span></div>
             <div class="two-col"><span class="left"><code></code></span><span class="right"><code style="font-size: 70%">cp_cursor.continue(['Google', 'Michael'])</code></span></div>
             <div class="two-col"><span class="left"><code class="answer">Michael</code></span><span class="right"><code class="answer">Michael</code></span></div>
-            <div class="two-col"><span class="left"><code style="font-size: 70%">cc_cursor.continue()</code></span><span class="right"><code>cp_cursor.continue()</code></span></div>
+            <div class="two-col"><span class="left"><code>cc_cursor.continue()</code></span><span class="right"><code>cp_cursor.continue()</code></span></div>
             <div class="two-col"><span class="left"><code>Ryan</code></span><span class="right"><code>Nick</code></span></div>
             <div class="two-col"><span class="left"><code></code></span><span class="right"><code style="font-size: 70%">cp_cursor.continue(['Google', 'Ryan'])</code></span></div>
             <div class="two-col"><span class="left"><code class="answer">Ryan</code></span><span class="right"><code class="answer">Ryan</code></span></div>
@@ -590,17 +596,20 @@ CachedModel.prototype.sync = function (method, model, options) {
   &lt;/entry&gt;
 &lt;/feed&gt;</pre>
 
-        <p>Google Contact API synchronization strategy: Last updated record + total result<br>
-        Query parameters: <code>max-results=1 orderby=lastmodified sortorder=ascending</code></p>
-        <p>RESTfull blob store API (AWS S3, Google Cloud Storage)<br>
-            Use GET Bucket query with a limit.<br>
-        <i>Results are sorted by URI (primary key)!</i><br>
-        Query parameters: <code>max-keys=10 prefix=modelName marker=startKey</code><br>
-            HTTP Header: <code>Last-Modified: 2013-01-31T08:48:58.198Z</code>        </p>
+        <p><a>GData Atom Syndication Format</a> <br>
+        Query parameters: <code>max-results=1 orderby=lastmodified sortorder=ascending</code><br>
+        Synchronization strategy: Last updated record + total result</p>
+        <hr>
+        <p><a>RESTfull blob store API</a> (AWS S3, Google Cloud Storage, Azure Blob Storage)<br>
+        Use GET Bucket query with a limit.<br>
+        Results are sorted by URI (primary key).<br>
+        Query parameters: <code>max-keys=10 prefix=modelName marker=startKey</code>
+           </p>
     </article>
 
-    <article>
-        <marquee  behavior="scroll" direction="up" height="100%">
+    <article class="smaller">
+    <div><code>YDN-DB</code>: <a>https://github.com/yathit/ydn-db</a></div>
+        <marquee  behavior="scroll" direction="up" height="100%" scrollamount="3">
             <pre>// Copyright 2012 YDN Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
