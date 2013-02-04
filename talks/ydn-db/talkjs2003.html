@@ -229,7 +229,7 @@ company_1 = {
     "first": 'Aaron',
     "last": 'Swartz'},
   "hobby": ['programming', 'blogging', 'politics']
-};      
+};
 article_1 = {
   "author_id": 124
   "title": 'Inheritance Patterns in JavaScript',
@@ -256,7 +256,7 @@ article_1 = {
             <p>Compute time: <code>O(log n<sub>article</sub>)</code></p>
         </div>
     </article>
-    
+
     <article class="smaller">
         <h3>Query</h3>
         <pre>author_2 = {
@@ -417,6 +417,64 @@ db.list(KeyIterator('author', 'idx_hb', key_range)).done(function(result) {
       No false positive retrieval. Offset, limit paging supported.</p>
         </div>
     </article>
+<article class="smaller">
+    <pre>var curr_iter = ydn.db.KeyIndexIterator.where('author', 'current', 'LIKE%', ['Facebook']);
+var prev_iter = ydn.db.KeyIndexIterator.where('author', 'previous', 'LIKE%', ['Google']);
+db.scan([curr_iter, prev_iter, function(keys, values) {
+  var curr_key = keys[0];
+  var prev_key = keys[1];
+  // calculate next key by zigzap merge
+  return [next_curr_key, next_prev_key];
+});</pre>
+    <table>
+        <thead>
+        <tr>
+            <td><code>curr_key</code></td>
+            <td><code>prev_key</code></td>
+            <td><code>next_curr_key</code></td>
+            <td><code>next_prev_key</code></td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>['Facebook', 'Andrei']</code></td>
+            <td><code>['Google', 'Matt']</code></td>
+            <td><code>['Facebook', 'Matt']</code></td>
+            <td><code></code></td>
+        </tr>
+        <tr>
+            <td><code>['Facebook', 'Michael']</code></td>
+            <td><code>['Google', 'Matt']</code></td>
+            <td><code></code></td>
+            <td><code>['Google', 'Michael']</code></td>
+        </tr>
+        </tbody>
+    </table>
+    <table>
+        <tbody>
+        <tr>
+            <td><code>curr_key</code></td>
+            <td><code>['Facebook', 'Andrei']</code></td>
+            <td><code>['Facebook', 'Michael']</code></td>
+        </tr>
+        <tr>
+            <td><code>prev_key</code></td>
+            <td><code>['Google', 'Matt']</code></td>
+            <td><code>['Google', 'Matt']</code></td>
+        </tr>
+        <tr>
+            <td><code>next_curr_key</code></td>
+            <td><code>['Facebook', 'Matt']</code></td>
+            <td><code>['Facebook', 'Michael']</code></td>
+        </tr>
+        <tr>
+            <td><code>next_prev_key</code></td>
+            <td><code></code></td>
+            <td><code>['Google', 'Michael']</code></td>
+        </tr>
+        </tbody>
+    </table>
+</article>
 </section>
 
 </body>
