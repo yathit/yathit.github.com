@@ -429,51 +429,60 @@ db.scan([curr_iter, prev_iter, function(keys, values) {
     <table>
         <thead>
         <tr>
+            <td>&nbsp;</td>
             <td><code>curr_key</code></td>
             <td><code>prev_key</code></td>
-            <td><code>next_curr_key</code></td>
-            <td><code>next_prev_key</code></td>
         </tr>
         </thead>
         <tbody>
         <tr>
+            <td>in</td>
             <td><code>['Facebook', 'Andrei']</code></td>
             <td><code>['Google', 'Matt']</code></td>
+        </tr>
+        <tr>
+            <td>out</td>
             <td><code>['Facebook', 'Matt']</code></td>
             <td><code></code></td>
         </tr>
         <tr>
+            <td>in</td>
             <td><code>['Facebook', 'Michael']</code></td>
-            <td><code>['Google', 'Matt']</code></td>
+            <td><code></code></td>
+        </tr>
+        <tr>
+            <td>out</td>
             <td><code></code></td>
             <td><code>['Google', 'Michael']</code></td>
         </tr>
-        </tbody>
-    </table>
-    <table>
-        <tbody>
         <tr>
-            <td><code>curr_key</code></td>
-            <td><code>['Facebook', 'Andrei']</code></td>
-            <td><code>['Facebook', 'Michael']</code></td>
+            <td>in</td>
+            <td><code class="answer">['Facebook', 'Michael']</code></td>
+            <td><code class="answer">['Google', 'Michael']</code></td>
         </tr>
         <tr>
-            <td><code>prev_key</code></td>
-            <td><code>['Google', 'Matt']</code></td>
-            <td><code>['Google', 'Matt']</code></td>
+            <td>out</td>
+            <td><code>true</code></td>
+            <td><code>true</code></td>
         </tr>
         <tr>
-            <td><code>next_curr_key</code></td>
-            <td><code>['Facebook', 'Matt']</code></td>
-            <td><code>['Facebook', 'Michael']</code></td>
+            <td>in</td>
+            <td><code>['Facebook', 'Ryan']</code></td>
+            <td><code>['Google', 'Nick']</code></td>
         </tr>
         <tr>
-            <td><code>next_prev_key</code></td>
+            <td>out</td>
             <td><code></code></td>
-            <td><code>['Google', 'Michael']</code></td>
+            <td><code>['Google', 'Ryan']</code></td>
+        </tr>
+        <tr>
+            <td>in</td>
+            <td><code class="answer">['Facebook', 'Ryan']</code></td>
+            <td><code class="answer">['Google', 'Ryan']</code></td>
         </tr>
         </tbody>
     </table>
+
 </article>
 </section>
 
