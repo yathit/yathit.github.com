@@ -1,0 +1,11 @@
+<aside class="aside">
+    <ul>
+        <li>
+            <ul><span class="title">Articles</span>
+                {% for post in site.tags.article %}
+                <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+</aside>
