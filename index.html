@@ -3,17 +3,110 @@ layout: default
 title: Yathit Developer Network
 ---
 
-<div id="home">
+<section class="featured">
     <h1>
         HTML5 javascript database library for web app.
     </h1>
-  <ul class="posts">
-    {% for post in site.posts %}
-      <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
-    {% endfor %}
-      <h3>YDN-db</h3>
-      {% for post in site.categories.ydn-db %}
-      <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
-      {% endfor %}
-  </ul>
+    <hgroup>
+        <h2>
+
+        </h2>
+    </hgroup>
+</section>
+
+<div>
+    <h3>Work on all browsers</h3>
+    <p>Support all desktop, mobile and web client browsers utilizing IndexedDB, WebSQL and localStorage. No dependency.</p>
+    <ul>
+        <li>Chrome 4+ (IndexedDB or WebSql)</li>
+        <li>Firefox 3+ (IndexedDB draft), Firefox 10+ (IndexedDB)</li>
+        <li>IE 6 (userdata), IE7+ (localStorage), IE10+ desktop/mobile (IndexedDB)</li>
+        <li>Safari 3.1+ desktop/mobile/iOS web client (WebSql)</li>
+        <li>Android web client, Android browser 2.1+ (WebSql), 4+ (IndexedDB)</li>
+        <li>Opera 10+ (WebSql), Opera 15+ (IndexedDB)</li>
+    </ul>
+</div><div>
+    <h3>Beautiful API</h3>
+    <p>The library API is carefully designed so that it is simple, powerful and make sense.</p>
+         <pre>var db = new ydn.db.Storage('db-name');
+db.put('store-name', {message: 'Hello world!'}, 'id1');
+db.get('store-name', 'id1').always(function(record) {
+  console.log(record);
+});</pre>
+</div><div>
+    <h3>Rich queries</h3>
+    <p>Fast indexed query on client database with multiple filters, ordering
+        and pagination.</p>
+        <pre>var q = db.from('people').where('age', '>=', 25);
+q.list(10).done(function(peoples) {
+  console.log(peoples); // list of first 10 peoples
+});</pre>
+        <pre>var q = db.from('people').where('country', '=', 'US').order('name');
+q.list(10).done(function(peoples) {
+  console.log(peoples); // list of first 10 peoples from US ordered by name
+});
+q.list(10).done(function(peoples) {
+  console.log(peoples); // next 10 peoples
+});</pre>
+</div><div>
+    <h3>Unified managed schema</h3>
+    <p>Manage database table or object stores as defined by simple javascript object.
+        Schema could optionally be versioned or let library to generate dynamically.</p>
+        <pre>var schema = {
+  stores: [{
+    name: 'people',
+    indexes: [{
+       keyPath: 'age'
+    }, {
+       name: 'age, name',
+       keyPath: ['age', 'name']
+    }]
+  ]
+}
+var db = new ydn.db.Storage('db-name', schema);</pre>
+</div><div>
+    <h3>Complex transaction workflow</h3>
+    <p>Run complex transaction workflow over hundreds of indexes on millions of records.</p>
+        <pre>db.run(function health_10up(tx_db) {
+   tx_db.get('player', 1).done(function(p1_obj) {
+        p1_obj.health += 10;
+        tx_db.put('player', p1_obj);
+   });
+}, ['player'], 'readwrite');</pre>
+</div><div>
+    <h3>High performance streaming API</h3>
+    <p>Reduce memory usage and fast UI respond by using streaming API.</p>
+        <pre>var q = db.from('author').where('first', 'starts', input_value);
+var ul = document.getElementById('auto-suggestion-list');
+ul.innerHTML = '';
+q.open(function (cursor) {
+  var li = document.createElement('li');
+  var people = cursor.getValue();
+  li.textContent = people.first + ' ' + people.last;
+});</pre>
+</div><div>
+    <h3>Synchronize with REST backend services</h3>
+    <p>Cache and persists in RESTful backend service.</p>
+    <pre> var schema = {
+  stores: [{
+        name: 'todo',
+        keyPath: 'id',
+        Sync: {
+          format: 'gcs',  // Google Cloud Storage
+          Options: {
+            bucket: 'ydn-note-data',
+            prefix: 'todo/'
+          }
+        }
+  }]
+};
+var db = new ydn.db.Storage(db_name, schema);
+// GET https://ydn-note-data.storage.googleapis.com/todo/id123
+db.get('todo', 'id123');
+// PUT https://ydn-note-data.storage.googleapis.com/todo/id123
+db.put('todo', 'id123');
+// DELETE https://ydn-note-data.storage.googleapis.com/todo/id123
+db.remove('todo', 'id123');
+    </pre>
 </div>
+<br/>

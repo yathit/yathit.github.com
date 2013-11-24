@@ -9,8 +9,19 @@
     <ul>
         <li>
             <ul><span class="title">ydn.db</span>
-                {% for post in site.site.categories.api-reference %}
+                {% for post in site.categories.api-reference %}
+                   {%if post.categories contains 'ydn-db' %}
+                   <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+                   {% endif %}
+                {% endfor %}
+            </ul>
+        </li>
+        <li>
+            <ul><span class="title">ydn</span>
+                {% for post in site.categories.api-reference %}
+                {%if post.categories contains 'ydn' %}
                 <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+                {% endif %}
                 {% endfor %}
             </ul>
         </li>
