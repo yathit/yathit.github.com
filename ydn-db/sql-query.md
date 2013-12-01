@@ -1,9 +1,6 @@
 ---
 layout: article
 title:  "SQL Query"
-date:   2011-3-2
-categories: ydn-db
-tag: article
 ---
 
 Descripting query in declearative SQL statement is very powerful. Unfortunately IndexedDB do not have SQL processor. This library parse SQL statement, prepare query as described in previous sections and execute them.

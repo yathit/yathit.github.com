@@ -1,9 +1,6 @@
 ---
 layout: article
 title:  "Modeling"
-date:   2010-2-1
-categories: ydn-db
-tag: article
 ---
 
 The NoSQL style databases has often been termed non-relational databases. This is an unfortunate misconception. As we will see, IndexedDB can easily model relationships. The real problem, however, is it does not enforce integraty of the relationships.

@@ -1,9 +1,6 @@
 ---
 layout: article
 title:  "Synchronization"
-date:   2011-3-3
-categories: ydn-db
-tag: article
 ---
 
 Data stored in client side storage mechanism is [ephemeral](https://developers.google.com/chrome/whitepapers/storage), although it may be possible to specified as persistent storage in the future through [quota management API](http://www.w3.org/TR/quota-api/). User agents are allowed to wipe out data anytime if deem necessary such as in case of low disk space or exceeding quota limit. For example mobile Safari browser will arbitrarily limit storage size to 50MB. Browser will not inform data lost to user or script. Critical data must be send back to the server.

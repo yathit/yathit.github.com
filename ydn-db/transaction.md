@@ -1,9 +1,6 @@
 ---
 layout: article
 title:  "Workflow"
-date:   2010-2-1
-categories: ydn-db
-tag: article
 ---
 
 ## Database connection ##

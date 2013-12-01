@@ -1,9 +1,6 @@
 ---
 layout: article
 title:  "Query"
-date:   2011-3-1
-categories: ydn-db
-tag: article
 ---
 
 IndexedDB is a NoSQL database and does not have a SQL processor. Query in IndexedDB is scanning keys over a range. To be fair, SQL processor performs the same thing in the lower level during its query.

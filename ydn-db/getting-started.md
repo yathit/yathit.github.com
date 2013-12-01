@@ -1,9 +1,6 @@
 ---
 layout: article
 title:  "Getting started"
-date:   2012-1-1
-categories: ydn-db
-tag: article
 ---
 
 ## Setup ##

@@ -1,11 +1,29 @@
 <aside class="aside">
-    <ul>
-        <li>
-            <ul><span class="title">Articles</span>
-                {% for post in site.tags.article %}
-                <li><a href="{{ post.url }}">{{ post.title }}</a></li>
-                {% endfor %}
-            </ul>
-        </li>
+
+<ul>
+    <li>
+        <ul><span class="title">Article</span>
+            <li><a href="/ydn-db/getting-started.html">Getting
+                started</a></li>
+            <li><a href="/ydn-db/schema.html">Modeling</a></li>
+            <li><a href="/ydn-db/transaction.html">Workflow</a></li>
+            <li><a href="/ydn-db/nosql-query.html">Query</a></li>
+            <li><a href="/ydn-db/sql-query.html">SQL</a></li>
+            <li><a href="/ydn-db/synchronization.html">Synchronization</a>
+            </li>
+            <li>
+                <a href="/ydn-db/using/encryption.html">Encryption</a>
+            </li>
+        </ul>
+        <ul><span class="title">Blog</span>
+            <li><a href="/blog/indexeddb-polyfill.html">IndexedDB
+                Polyfill</a></li>
+            <li><a href="/tutorial/angular-js-gcs-backend.html">AngularJs
+                web app with GCS sync</a></li>
+        </ul>
+        <li><a href="/feeds/stackoverflow/ydn-db.html"
+               class="title">FAQ</a></li>
     </ul>
+</ul>
+
 </aside>
